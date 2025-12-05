@@ -14,9 +14,9 @@ type Job struct {
 	// JobId - уникальный ID вакансии
 	Id string `json:"id"`
 	// UserID - ID пользователя, создавшего вакансию (берется из куки)
-	UserID      string `json:"user_id"` // НОВОЕ ПОЛЕ: Связь с пользователем
+	UserID      string `json:"user_id"`
 	Title       string `json:"title"`
-	Company     string `json:"company"` // ИСПРАВЛЕНО: Добавлена закрывающая кавычка
+	Company     string `json:"company"`
 	School      string `json:"school"`
 	Description string `json:"description"`
 	Salary      string `json:"salary"`
@@ -51,14 +51,10 @@ func LoadJobs() ([]Job, error) {
 func SaveJobs(jobs []Job) error {
 	data, err := json.MarshalIndent(jobs, "", "  ")
 	if err != nil {
-		return fmt.Errorf("ошибка кодирования в JSON: %w", err)
+		return fmt.Errorf("ошибка сериализации JSON: %w", err)
 	}
-
-	err = os.WriteFile(db, data, 0644)
-	if err != nil {
-		return fmt.Errorf("ошибка записи в файл %s: %w", db, err)
-	}
-	return nil
+	// os.WriteFile создает файл, если его нет, и перезаписывает, если есть
+	return os.WriteFile(db, data, 0644)
 }
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
@@ -131,63 +127,58 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 1. Получаем ID пользователя из куки
 	userIDCookie, err := r.Cookie("id_cookie")
 	if err != nil {
 		http.Error(w, "Unauthorized: Missing user ID cookie", http.StatusUnauthorized)
 		return
 	}
-	userID := userIDCookie.Value
+	currentUserID := userIDCookie.Value
 
-	err = r.ParseForm()
-	if err != nil {
-		http.Error(w, "Error parsing form: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// 1. Проверка на ограничение 1 вакансией
+	// 2. Загружаем существующие вакансии
 	jobs, err := LoadJobs()
 	if err != nil {
 		http.Error(w, "Error loading jobs: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Если нужна проверка "не более 1 вакансии на пользователя"
-	for _, job := range jobs {
-		if job.UserID == userID {
-			http.Error(w, "User can only create one job", http.StatusConflict)
-			return
-		}
+	// 3. Собираем данные из формы
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error parsing form: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	// 2. Генерация уникального Job ID
-	jobID := uuid.New().String()
+	// Простая валидация (проверяем обязательные поля)
+	if r.FormValue("title") == "" || r.FormValue("description") == "" {
+		http.Error(w, "Title and description are required", http.StatusBadRequest)
+		return
+	}
 
+	// 4. Создаем новую вакансию
 	newJob := Job{
-		Id:          jobID,  // УНИКАЛЬНЫЙ ID ВАКАНСИИ
-		UserID:      userID, // ID создателя
+		Id:          uuid.New().String(), // Генерируем новый UUID
+		UserID:      currentUserID,       // Привязываем к текущему пользователю
 		Title:       r.FormValue("title"),
 		Company:     r.FormValue("company"),
-		School:      r.FormValue("school"),
+		School:      r.FormValue("school"), // Убедитесь, что это поле есть во фронте, если оно нужно
 		Description: r.FormValue("description"),
 		Salary:      r.FormValue("salary"),
 		Skills:      r.FormValue("skills"),
 	}
 
-	if newJob.Title == "" || newJob.Description == "" {
-		http.Error(w, "Title and Description are required", http.StatusBadRequest)
-		return
-	}
-
+	// 5. Добавляем новую вакансию в список
 	jobs = append(jobs, newJob)
 
+	// 6. Сохраняем обновленный список
 	err = SaveJobs(jobs)
 	if err != nil {
-		http.Error(w, "Error saving job: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error saving jobs: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	// 7. Успешный ответ
 	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(newJob)
 }
 
@@ -253,19 +244,18 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	jobID := strings.TrimPrefix(r.URL.Path, "/job/")
+	if jobID == r.URL.Path {
+		http.Error(w, "Missing job ID", http.StatusBadRequest)
+		return
+	}
+
 	userIDCookie, err := r.Cookie("id_cookie")
 	if err != nil {
-		http.Error(w, "Unauthorized: Missing user ID cookie", http.StatusUnauthorized)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	currentUserID := userIDCookie.Value
-
-	// ИСПРАВЛЕНИЕ: Получаем ID вакансии из URL (например, /job/123-abc)
-	jobID := strings.TrimPrefix(r.URL.Path, "/job/")
-	if jobID == "" || jobID == "job" {
-		http.Error(w, "Missing job ID in URL path", http.StatusBadRequest)
-		return
-	}
 
 	jobs, err := LoadJobs()
 	if err != nil {
@@ -273,14 +263,14 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updatedJobs []Job
-	var found bool
-	var unauthorized bool
+	updatedJobs := []Job{}
+	found := false
+	unauthorized := false
 
-	// ИСПРАВЛЕНИЕ: Проверяем, что ID вакансии совпадает, И что текущий пользователь — создатель
 	for _, job := range jobs {
 		if job.Id == jobID {
-			if job.UserID == currentUserID { // Проверка прав
+			// Проверка прав
+			if job.UserID == currentUserID {
 				found = true
 				// Не добавляем в updatedJobs (удаляем)
 			} else {

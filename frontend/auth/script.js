@@ -1,5 +1,6 @@
 // Базовый URL для API запросов
 const API_BASE_URL = 'http://localhost:8080'; // Измените на ваш адрес сервера
+const REDIRECT_URL = '/main/main.html'; 
 
 // Получение элементов
 const loginTab = document.getElementById('login-tab');
@@ -129,13 +130,16 @@ async function handleLogin(event) {
         const responseText = await response.text();
         
         if (response.ok) {
-            showMessage(loginForm, 'Вход выполнен успешно!');
-            
-            // Обновляем состояние интерфейса
-            await updateAuthState();
+            showMessage(loginForm, 'Вход выполнен успешно! Перенаправление...');
             
             // Очищаем поля формы
             loginForm.reset();
+            
+            // Перенаправление на другую страницу через 1 секунду
+            setTimeout(() => {
+                window.location.href = REDIRECT_URL;
+            }, 1000);
+            
         } else {
             console.error('Login error response:', responseText);
             showMessage(loginForm, `Ошибка входа: ${responseText}`, true);
@@ -210,17 +214,19 @@ async function handleRegister(event) {
     }
 }
 
+
 // Функция проверки авторизации
 async function checkAuth() {
     try {
         const response = await fetch(`${API_BASE_URL}/checkauth`, {
             method: 'GET',
-            credentials: 'include' // Важно для отправки cookies
+            credentials: 'include'
         });
         
-        if (response.ok) {
-            const username = await response.text();
-            return { isAuthenticated: true, username };
+        const data = await response.json();
+        
+        if (data.is_authenticated) {
+            return { isAuthenticated: true, username: data.username };
         } else {
             return { isAuthenticated: false, username: null };
         }
@@ -241,7 +247,7 @@ async function handleLogout() {
         if (response.ok) {
             showMessage(loginForm, 'Вы успешно вышли из системы.');
             // Обновляем состояние
-            await updateAuthState();
+            updateAuthState();
         }
     } catch (error) {
         console.error('Logout error:', error);
@@ -250,66 +256,81 @@ async function handleLogout() {
 
 // Функция обновления состояния авторизации в интерфейсе
 async function updateAuthState() {
-    const authState = await checkAuth();
-    const loginBtn = loginForm.querySelector('.btn');
-    const loginFooter = loginForm.querySelector('.form-footer');
-    
-    if (authState.isAuthenticated) {
-        // Если пользователь авторизован
-        loginBtn.textContent = 'Выйти';
-        loginBtn.removeEventListener('click', handleLogin);
-        loginBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleLogout();
-        });
+    try {
+        const authState = await checkAuth();
+        const loginBtn = loginForm.querySelector('.btn');
+        const loginFooter = loginForm.querySelector('.form-footer');
         
-        // Обновляем сообщение
-        const infoMessage = loginForm.querySelector('.info-message');
-        if (infoMessage) {
-            infoMessage.innerHTML = `<i class="fas fa-user-check"></i> Вы вошли как: ${authState.username}`;
-        }
-        
-        // Скрываем ссылку на регистрацию
-        if (loginFooter) {
-            loginFooter.style.display = 'none';
-        }
-        
-        // Добавляем кнопку выхода в заголовок, если её еще нет
-        let logoutTab = document.getElementById('logout-tab');
-        if (!logoutTab) {
-            const header = document.querySelector('.header');
-            logoutTab = document.createElement('div');
-            logoutTab.className = 'tab';
-            logoutTab.id = 'logout-tab';
-            logoutTab.innerHTML = '<i class="fas fa-sign-out-alt"></i> Выход';
-            logoutTab.addEventListener('click', function(e) {
+        if (authState.isAuthenticated) {
+            // Если пользователь авторизован
+            loginBtn.textContent = 'Выйти';
+            loginBtn.removeEventListener('click', handleLogin);
+            loginBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 handleLogout();
             });
-            header.appendChild(logoutTab);
+            
+            // Обновляем сообщение
+            const infoMessage = loginForm.querySelector('.info-message');
+            if (infoMessage) {
+                infoMessage.innerHTML = `<i class="fas fa-user-check"></i> Вы вошли как: ${authState.username}`;
+            }
+            
+            // Скрываем ссылку на регистрацию
+            if (loginFooter) {
+                loginFooter.style.display = 'none';
+            }
+            
+            // Добавляем кнопку выхода в заголовок, если её еще нет
+            let logoutTab = document.getElementById('logout-tab');
+            if (!logoutTab) {
+                const header = document.querySelector('.header');
+                logoutTab = document.createElement('div');
+                logoutTab.className = 'tab';
+                logoutTab.id = 'logout-tab';
+                logoutTab.innerHTML = '<i class="fas fa-sign-out-alt"></i> Выход';
+                logoutTab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    handleLogout();
+                });
+                header.appendChild(logoutTab);
+            }
+            
+            // Автоматическое перенаправление для уже авторизованных пользователей
+            // если они находятся на странице входа
+            if (window.location.pathname.includes('index.html') || 
+                window.location.pathname.endsWith('/') ||
+                window.location.pathname.includes('auth/')) {
+                console.log('Пользователь уже авторизован, перенаправляем...');
+                setTimeout(() => {
+                    window.location.href = REDIRECT_URL;
+                }, 1000);
+            }
+        } else {
+            // Если пользователь не авторизован
+            loginBtn.textContent = 'Войти';
+            loginBtn.removeEventListener('click', handleLogout);
+            loginBtn.addEventListener('click', handleLogin);
+            
+            // Восстанавливаем сообщение по умолчанию
+            const infoMessage = loginForm.querySelector('.info-message');
+            if (infoMessage) {
+                infoMessage.innerHTML = `<i class="fas fa-info-circle"></i> Для теста используйте: login: user, password: 123456`;
+            }
+            
+            // Показываем ссылку на регистрацию
+            if (loginFooter) {
+                loginFooter.style.display = 'block';
+            }
+            
+            // Удаляем кнопку выхода из заголовка
+            const logoutTab = document.getElementById('logout-tab');
+            if (logoutTab) {
+                logoutTab.remove();
+            }
         }
-    } else {
-        // Если пользователь не авторизован
-        loginBtn.textContent = 'Войти';
-        loginBtn.removeEventListener('click', handleLogout);
-        loginBtn.addEventListener('click', handleLogin);
-        
-        // Восстанавливаем сообщение по умолчанию
-        const infoMessage = loginForm.querySelector('.info-message');
-        if (infoMessage) {
-            infoMessage.innerHTML = `<i class="fas fa-info-circle"></i> Для теста используйте: login: user, password: 123456`;
-        }
-        
-        // Показываем ссылку на регистрацию
-        if (loginFooter) {
-            loginFooter.style.display = 'block';
-        }
-        
-        // Удаляем кнопку выхода из заголовка
-        const logoutTab = document.getElementById('logout-tab');
-        if (logoutTab) {
-            logoutTab.remove();
-        }
+    } catch (error) {
+        console.error('Error updating auth state:', error);
     }
 }
 
@@ -379,9 +400,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Отладка CORS
+// Проверка доступности API при загрузке (без сообщений об ошибках)
 document.addEventListener('DOMContentLoaded', function() {
-    // Проверяем доступность API при загрузке
     fetch(`${API_BASE_URL}/checkauth`, {
         method: 'GET',
         credentials: 'include'
@@ -391,6 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => {
         console.error('API недоступен:', error);
-        showMessage(loginForm, 'Сервер авторизации недоступен. Проверьте, запущен ли Go сервер на порту 8080.', true);
+        // Не показываем сообщение пользователю, чтобы не мешать
     });
 });

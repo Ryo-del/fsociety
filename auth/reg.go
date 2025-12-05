@@ -26,8 +26,15 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+type AuthResponse struct {
+	IsAuthenticated bool   `json:"is_authenticated"`
+	Username        string `json:"username,omitempty"`
+	Message         string `json:"message,omitempty"`
+}
+
 var dataFile string = "data.json"
 var jwtSecretKey = []byte("YOUR_EXTREMELY_STRONG_SECRET_KEY") // Секретный ключ для подписи JWT
+
 // Middleware для обработки CORS
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -61,19 +68,46 @@ func CheckAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Устанавливаем Content-Type для JSON
+	w.Header().Set("Content-Type", "application/json")
+
 	cookie, err := r.Cookie("auth_token")
 	if err != nil {
-		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		// Нет токена - пользователь не авторизован
+		response := AuthResponse{
+			IsAuthenticated: false,
+			Message:         "Not authenticated",
+		}
+		jsonResponse, _ := json.Marshal(response)
+		w.WriteHeader(http.StatusOK) // Возвращаем 200 даже для неавторизованных
+		w.Write(jsonResponse)
 		return
 	}
+
 	_, username, err := ValidateJWT(cookie.Value)
 	if err != nil {
-		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		// Токен невалидный
+		response := AuthResponse{
+			IsAuthenticated: false,
+			Message:         "Invalid token",
+		}
+		jsonResponse, _ := json.Marshal(response)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonResponse)
 		return
 	}
+
+	// Пользователь авторизован
+	response := AuthResponse{
+		IsAuthenticated: true,
+		Username:        username,
+		Message:         "Authenticated",
+	}
+	jsonResponse, _ := json.Marshal(response)
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(username))
+	w.Write(jsonResponse)
 }
+
 func LogOutHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -101,6 +135,7 @@ func LogOutHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Logged out successfully"))
 }
+
 func LoadUser() ([]User, error) {
 	data, err := os.ReadFile(dataFile)
 	if err != nil {
@@ -177,6 +212,7 @@ func HashPassword(password string) (string, error) {
 	// Возвращаем хэш в виде строки
 	return string(bytes), nil
 }
+
 func LoaginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

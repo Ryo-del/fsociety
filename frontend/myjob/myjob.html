@@ -3,105 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои вакансии - Job Finder Pro</title>
+    <title>Мои вакансии</title>
     <link rel="stylesheet" href="myjob.css">
-</head> 
+</head>
 <body>
-    <header>
-        <div class="logo">Job Finder Pro</div>
-        <nav>
-            <button onclick="location.href='../main/main.html'">Хочу работать</button>
-            <button onclick="location.href='../create/create.html'">Создать вакансию</button>
-            <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
-            <button onclick="logout()">Выход</button>
-            <span id="welcome-message">Имя пользователя</span>
-        </nav>
-    </header>
 
-    <main>
-        <!-- Контейнер моих вакансий -->
-        <div id="my-jobs-container" class="form-container">
-            <h2>Мои вакансии</h2>
-            <div id="my-jobs-list">
-                <!-- Пример карточек моих вакансий -->
-                <div class="job-card">
-                    <div class="job-card-header">
-                        <h3>Senior JavaScript Developer</h3>
-                        <span class="job-type">Удалённая работа</span>
-                    </div>
-                    <div class="job-card-company">MyTechCompany</div>
-                    <div class="job-card-salary">200,000 - 250,000 ₽</div>
-                    <div class="job-card-skills">
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">TypeScript</span>
-                        <span class="skill-tag">Node.js</span>
-                        <span class="skill-tag">Vue.js</span>
-                        <span class="skill-tag">MongoDB</span>
-                    </div>
-                    <p class="job-description">Требуется Senior JavaScript разработчик для работы над новым проектом. Опыт работы от 5 лет...</p>
-                    <div class="job-card-footer">
-                        <span class="job-location">Удалённо</span>
-                        <span class="job-date">Опубликовано: 15.10.2023</span>
-                    </div>
-                    <div class="job-actions" style="margin-top: 15px; justify-content: flex-start; gap: 10px;">
-                        <button class="primary" style="padding: 8px 16px;">Редактировать</button>
-                        <button class="danger" style="padding: 8px 16px;">Удалить</button>
-                    </div>
-                </div>
+<header>
+    <div class="logo">Job Finder Pro</div>
+    <nav>
+        <button onclick="location.href='../main/main.html'">Хочу работать</button>
+        <button onclick="location.href='../create/create.html'">Создать вакансию</button>
+        <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
+        <button id="logout-btn">Выход</button>
+        <span id="welcome-message">Загрузка...</span>
+    </nav>
+</header>
 
-                <div class="job-card">
-                    <div class="job-card-header">
-                        <h3>DevOps Инженер</h3>
-                        <span class="job-type">Полная занятость</span>
-                    </div>
-                    <div class="job-card-company">MyTechCompany</div>
-                    <div class="job-card-salary">180,000 - 220,000 ₽</div>
-                    <div class="job-card-skills">
-                        <span class="skill-tag">Docker</span>
-                        <span class="skill-tag">Kubernetes</span>
-                        <span class="skill-tag">AWS</span>
-                        <span class="skill-tag">CI/CD</span>
-                        <span class="skill-tag">Linux</span>
-                    </div>
-                    <p class="job-description">Ищем DevOps инженера для настройки и поддержки инфраструктуры. Опыт работы от 3 лет...</p>
-                    <div class="job-card-footer">
-                        <span class="job-location">Москва</span>
-                        <span class="job-date">Опубликовано: 10.10.2023</span>
-                    </div>
-                    <div class="job-actions" style="margin-top: 15px; justify-content: flex-start; gap: 10px;">
-                        <button class="primary" style="padding: 8px 16px;">Редактировать</button>
-                        <button class="danger" style="padding: 8px 16px;">Удалить</button>
-                    </div>
-                </div>
-
-                <div class="job-card">
-                    <div class="job-card-header">
-                        <h3>Младший Аналитик Данных</h3>
-                        <span class="job-type">Стажировка</span>
-                    </div>
-                    <div class="job-card-company">MyTechCompany</div>
-                    <div class="job-card-salary">40,000 - 60,000 ₽</div>
-                    <div class="job-card-skills">
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">SQL</span>
-                        <span class="skill-tag">Excel</span>
-                        <span class="skill-tag">Tableau</span>
-                    </div>
-                    <p class="job-description">Стажировка для начинающих аналитиков. Обучение, наставничество, возможность трудоустройства...</p>
-                    <div class="job-card-footer">
-                        <span class="job-location">Санкт-Петербург</span>
-                        <span class="job-date">Опубликовано: 05.10.2023</span>
-                    </div>
-                    <div class="job-actions" style="margin-top: 15px; justify-content: flex-start; gap: 10px;">
-                        <button class="primary" style="padding: 8px 16px;">Редактировать</button>
-                        <button class="danger" style="padding: 8px 16px;">Удалить</button>
-                    </div>
-                </div>
-            </div>
-            <p class="form-message success">У вас 3 активные вакансии</p>
+<main>
+    <div id="my-jobs-container" class="form-container">
+        <h2>Мои вакансии</h2>
         </div>
-    </main>
+    <p id="job-list-message" class="form-message">Загрузка...</p> 
+    <div id="my-jobs-list"></div>
+</main>
 
-    <script src="myjob.js"></script>
+<script src="myjob.js"></script>
+<div id="edit-modal" class="edit-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeEditModal()"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Редактировать вакансию</h2>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-job-form">
+                <input type="hidden" id="edit-id" name="id">
+
+                <div class="form-group">
+                    <label for="edit-title">Заголовок</label>
+                    <input type="text" id="edit-title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-company">Компания</label>
+                    <input type="text" id="edit-company" name="company" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-salary">Зарплата (текст)</label>
+                    <input type="text" id="edit-salary" name="salary">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-skills">Ключевые навыки (через запятую)</label>
+                    <input type="text" id="edit-skills" name="skills">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-description">Описание</label>
+                    <textarea id="edit-description" name="description" required></textarea>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="submit" class="primary">Сохранить изменения</button>
+                    <button type="button" class="secondary" onclick="closeEditModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

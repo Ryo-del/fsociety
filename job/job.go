@@ -310,13 +310,11 @@ func DeleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
-
 func MyjobHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	userIDCookie, err := r.Cookie("id_cookie")
 	if err != nil {
 		http.Error(w, "Unauthorized: Missing user ID cookie", http.StatusUnauthorized)

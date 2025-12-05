@@ -234,20 +234,7 @@ main {
     background-color: rgba(40, 167, 69, 0.1);
 }
 
-/* Бейдж для активных вакансий */
-.job-card::before {
-    content: 'Активно';
-    position: absolute;
-    top: -10px;
-    right: 20px;
-    background-color: #28a745;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75em;
-    font-weight: 600;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
+
 
 /* Стили для статусов вакансий */
 .job-status {
@@ -261,7 +248,7 @@ main {
 
 .status-active {
     background-color: #d4edda;
-    color: #155724;
+    color: #00ff3c;
 }
 
 .status-draft {
@@ -314,4 +301,453 @@ main {
         opacity: 1;
         transform: translateY(0);
     }
+}/* Добавьте эти стили в конец файла myjob.css */
+
+/* Стили для модального окна редактирования */
+.edit-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 0;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: white;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8em;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.modal-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+/* Стили формы в модальном окне */
+#edit-job-form .form-group {
+    margin-bottom: 20px;
+}
+
+#edit-job-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+#edit-job-form input,
+#edit-job-form select,
+#edit-job-form textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e1e5eb;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+#edit-job-form input:focus,
+#edit-job-form select:focus,
+#edit-job-form textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#edit-job-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.form-buttons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1em;
+}
+
+.form-buttons button.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.form-buttons button.secondary {
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e1e5eb;
+}
+
+.form-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.form-buttons button:active {
+    transform: translateY(0);
+}
+
+/* Стили для уведомлений */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 3000;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    max-width: 350px;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    background-color: #28a745;
+}
+
+.notification.error {
+    background-color: #dc3545;
+}
+
+.notification.info {
+    background-color: #17a2b8;
+}
+
+/* Стили для пустого состояния */
+.no-jobs {
+    text-align: center;
+    padding: 50px 20px;
+    grid-column: 1 / -1;
+}
+
+.no-jobs h3 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.no-jobs p {
+    color: #6c757d;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.no-jobs button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+}
+
+.no-jobs button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Анимация для модального окна */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Дополнительные анимации для удаления */
+.job-card {
+    transition: all 0.3s ease;
+}
+
+/* Адаптивность для модального окна */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        padding: 0;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .form-buttons {
+        flex-direction: column;
+    }
+    
+    .form-buttons button {
+        width: 100%;
+    }
+}
+/* Добавьте в конец файла */
+
+/* Стили для сообщений об ошибках */
+.message-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    max-width: 400px;
+}
+
+.message {
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    animation: slideInRight 0.3s ease;
+}
+
+.message.success {
+    background-color: #28a745;
+}
+
+.message.error {
+    background-color: #dc3545;
+}
+
+.message.info {
+    background-color: #17a2b8;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Стили для пустого состояния */
+.no-jobs {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    margin: 30px 0;
+    border: 2px dashed #dee2e6;
+}
+
+.no-jobs h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.no-jobs p {
+    color: #6c757d;
+    margin-bottom: 25px;
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+.no-jobs button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.no-jobs button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.no-jobs button:active {
+    transform: translateY(0);
+}
+
+/* Дополнительные стили для формы в модальном окне */
+#edit-job-form input.error,
+#edit-job-form select.error,
+#edit-job-form textarea.error {
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.05);
+}
+
+#edit-job-form .error-message {
+    color: #dc3545;
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: none;
+}
+
+#edit-job-form input:invalid,
+#edit-job-form textarea:invalid {
+    border-color: #dc3545;
+}
+
+#edit-job-form input:invalid ~ .error-message,
+#edit-job-form textarea:invalid ~ .error-message {
+    display: block;
+}
+.no-jobs {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    margin: 30px 0;
+    border: 2px dashed #dee2e6;
+    grid-column: 1 / -1;
+}
+
+.no-jobs h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.6em;
+    font-weight: 700;
+}
+
+.no-jobs p {
+    color: #6c757d;
+    margin-bottom: 25px;
+    font-size: 1.15em;
+}
+
+.no-jobs button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px 35px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.no-jobs button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+.no-jobs {
+    text-align: center;
+    padding: 60px 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 2px dashed #d3d6e1;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    grid-column: 1 / -1;
+}
+
+.no-jobs h3 {
+    color: #667eea;
+    font-size: 1.7em;
+    margin-bottom: 10px;
+}
+
+.no-jobs p {
+    color: #6c757d;
+    font-size: 1.1em;
+    margin-bottom: 25px;
+}
+
+.no-jobs button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 14px 26px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1em;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    transition: 0.3s;
+}
+
+.no-jobs button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(102, 126, 234, 0.45);
 }

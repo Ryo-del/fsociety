@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать вакансию - Job Finder Pro</title>
+    <link rel="stylesheet" href="create.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Job Finder Pro</div>
+        <nav>
+            <button onclick="location.href='main.html'">Хочу работать</button>
+            <button onclick="location.href='create.html'">Создать вакансию</button>
+            <button onclick="location.href='myjob.html'">Мои вакансии</button>
+            <button onclick="logout()">Выход</button>
+            <span id="welcome-message" style="display: none;"></span>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Контейнер создания вакансии -->
+        <div id="create-job-container" class="form-container">
+            <form id="create-job-form">
+                <h2>Создать вакансию</h2>
+                <input type="text" name="title" placeholder="Название вакансии" required>
+                <input type="text" name="company" placeholder="Компания" required>
+                <input type="text" name="description" placeholder="Описание" required>
+                <input type="text" name="salary" placeholder="Зарплата" required>
+                <input type="text" name="skills" placeholder="Требуемые навыки (через запятую)" required>
+                <input type="text" name="location" placeholder="Местоположение">
+                <input type="text" name="experience" placeholder="Требуемый опыт">
+                <select name="job_type">
+                    <option value="" disabled selected>Тип занятости</option>
+                    <option value="full">Полная занятость</option>
+                    <option value="part">Частичная занятость</option>
+                    <option value="remote">Удалённая работа</option>
+                    <option value="internship">Стажировка</option>
+                </select>
+                <button type="submit">Опубликовать вакансию</button>
+                <p class="form-message">Заполните все поля для создания вакансии</p>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function logout() {
+            if (confirm('Выйти из системы?')) {
+                location.href = 'index.html';
+            }
+        }
+
+        // Простая валидация формы
+        document.getElementById('create-job-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = this.querySelector('[name="title"]').value;
+            const company = this.querySelector('[name="company"]').value;
+            const salary = this.querySelector('[name="salary"]').value;
+            
+            if (title && company && salary) {
+                const message = this.querySelector('.form-message');
+                message.textContent = 'Вакансия успешно создана!';
+                message.className = 'form-message success';
+                
+                // Очистка формы
+                setTimeout(() => {
+                    this.reset();
+                    message.textContent = 'Заполните все поля для создания новой вакансии';
+                    message.className = 'form-message';
+                }, 2000);
+            } else {
+                const message = this.querySelector('.form-message');
+                message.textContent = 'Пожалуйста, заполните все обязательные поля';
+                message.className = 'form-message';
+            }
+        });
+    </script>
+</body>
+</html>

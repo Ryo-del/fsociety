@@ -1,0 +1,29 @@
+[
+  {
+    "id": "19787c50-892f-493a-b0b3-2ae335690382",
+    "user_id": "19f2387e-3705-4275-b436-47fb00b2a59a",
+    "name": "Хуй",
+    "gender": "male",
+    "age": "17",
+    "job": "it",
+    "school": "Тавиак"
+  },
+  {
+    "id": "d1cc2f6d-c354-44b0-a098-6264c1fdacee",
+    "user_id": "18bc055e-d5d7-4002-8113-2bf6565659c1",
+    "name": "1",
+    "gender": "female",
+    "age": "16",
+    "job": "1",
+    "school": "1"
+  },
+  {
+    "id": "c28833b8-799a-462b-aae8-794e82e0a41a",
+    "user_id": "18bc055e-d5d7-4002-8113-2bf6565659c1",
+    "name": "34",
+    "gender": "male",
+    "age": "34",
+    "job": "34",
+    "school": "34"
+  }
+]

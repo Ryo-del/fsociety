@@ -1,6 +1,7 @@
+
+
 // Базовый URL для API запросов
-const API_BASE_URL = 'http://localhost:8080'; // Измените на ваш адрес сервера
-const REDIRECT_URL = '/main/main.html'; 
+const API_BASE_URL = 'http://localhost:8080';
 
 // Получение элементов
 const loginTab = document.getElementById('login-tab');
@@ -135,9 +136,9 @@ async function handleLogin(event) {
             // Очищаем поля формы
             loginForm.reset();
             
-            // Перенаправление на другую страницу через 1 секунду
+            // Перенаправление на главную страницу через 1 секунду
             setTimeout(() => {
-                window.location.href = REDIRECT_URL;
+                window.location.href = '../main/main.html';
             }, 1000);
             
         } else {
@@ -214,20 +215,19 @@ async function handleRegister(event) {
     }
 }
 
-
 // Функция проверки авторизации
 async function checkAuth() {
     try {
         const response = await fetch(`${API_BASE_URL}/checkauth`, {
             method: 'GET',
-            credentials: 'include'
+            credentials: 'include' // Важно для отправки cookies
         });
         
-        const data = await response.json();
-        
-        if (data.is_authenticated) {
-            return { isAuthenticated: true, username: data.username };
+        if (response.ok) {
+            const data = await response.json();
+            return { isAuthenticated: data.is_authenticated, username: data.username };
         } else {
+            // 401 (Unauthorized) - это нормально, пользователь не авторизован
             return { isAuthenticated: false, username: null };
         }
     } catch (error) {
@@ -236,101 +236,27 @@ async function checkAuth() {
     }
 }
 
-// Функция выхода
-async function handleLogout() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            showMessage(loginForm, 'Вы успешно вышли из системы.');
-            // Обновляем состояние
-            updateAuthState();
-        }
-    } catch (error) {
-        console.error('Logout error:', error);
-    }
-}
 
-// Функция обновления состояния авторизации в интерфейсе
+// Функция обновления состояния авторизации в интерфейсе (исправленная)
 async function updateAuthState() {
-    try {
-        const authState = await checkAuth();
-        const loginBtn = loginForm.querySelector('.btn');
-        const loginFooter = loginForm.querySelector('.form-footer');
-        
-        if (authState.isAuthenticated) {
-            // Если пользователь авторизован
-            loginBtn.textContent = 'Выйти';
-            loginBtn.removeEventListener('click', handleLogin);
-            loginBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                handleLogout();
-            });
-            
-            // Обновляем сообщение
-            const infoMessage = loginForm.querySelector('.info-message');
-            if (infoMessage) {
-                infoMessage.innerHTML = `<i class="fas fa-user-check"></i> Вы вошли как: ${authState.username}`;
-            }
-            
-            // Скрываем ссылку на регистрацию
-            if (loginFooter) {
-                loginFooter.style.display = 'none';
-            }
-            
-            // Добавляем кнопку выхода в заголовок, если её еще нет
-            let logoutTab = document.getElementById('logout-tab');
-            if (!logoutTab) {
-                const header = document.querySelector('.header');
-                logoutTab = document.createElement('div');
-                logoutTab.className = 'tab';
-                logoutTab.id = 'logout-tab';
-                logoutTab.innerHTML = '<i class="fas fa-sign-out-alt"></i> Выход';
-                logoutTab.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    handleLogout();
-                });
-                header.appendChild(logoutTab);
-            }
-            
-            // Автоматическое перенаправление для уже авторизованных пользователей
-            // если они находятся на странице входа
-            if (window.location.pathname.includes('index.html') || 
-                window.location.pathname.endsWith('/') ||
-                window.location.pathname.includes('auth/')) {
-                console.log('Пользователь уже авторизован, перенаправляем...');
-                setTimeout(() => {
-                    window.location.href = REDIRECT_URL;
-                }, 1000);
-            }
-        } else {
-            // Если пользователь не авторизован
-            loginBtn.textContent = 'Войти';
-            loginBtn.removeEventListener('click', handleLogout);
-            loginBtn.addEventListener('click', handleLogin);
-            
-            // Восстанавливаем сообщение по умолчанию
-            const infoMessage = loginForm.querySelector('.info-message');
-            if (infoMessage) {
-                infoMessage.innerHTML = `<i class="fas fa-info-circle"></i> Для теста используйте: login: user, password: 123456`;
-            }
-            
-            // Показываем ссылку на регистрацию
-            if (loginFooter) {
-                loginFooter.style.display = 'block';
-            }
-            
-            // Удаляем кнопку выхода из заголовка
-            const logoutTab = document.getElementById('logout-tab');
-            if (logoutTab) {
-                logoutTab.remove();
-            }
-        }
-    } catch (error) {
-        console.error('Error updating auth state:', error);
+    // Проверяем, был ли это принудительный выход
+    const urlParams = new URLSearchParams(window.location.search);
+    const isLogout = urlParams.has('logout');
+    
+    if (isLogout) {
+        // Если это страница после выхода, НЕ проверяем авторизацию
+        console.log('Страница загружена после выхода, пропускаем проверку авторизации');
+        return;
+    }
+    
+    const authState = await checkAuth();
+    
+    // Если пользователь уже авторизован, перенаправляем на главную
+    if (authState.isAuthenticated) {
+        console.log('Пользователь уже авторизован, перенаправляем на главную...');
+        setTimeout(() => {
+            window.location.href = '../main/main.html';
+        }, 500);
     }
 }
 
@@ -342,7 +268,7 @@ registerForm.addEventListener('submit', handleRegister);
 
 // Автоматическая проверка авторизации при загрузке страницы
 document.addEventListener('DOMContentLoaded', async function() {
-    // Проверяем авторизацию
+    // Проверяем авторизацию - если уже авторизован, перенаправляем
     await updateAuthState();
     
     // Фокус на поле логина при загрузке
@@ -400,7 +326,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Проверка доступности API при загрузке (без сообщений об ошибках)
+// Проверка доступности API при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     fetch(`${API_BASE_URL}/checkauth`, {
         method: 'GET',
@@ -411,6 +337,5 @@ document.addEventListener('DOMContentLoaded', function() {
     })
     .catch(error => {
         console.error('API недоступен:', error);
-        // Не показываем сообщение пользователю, чтобы не мешать
     });
 });

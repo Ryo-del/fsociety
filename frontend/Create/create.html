@@ -10,9 +10,9 @@
     <header>
         <div class="logo">Job Finder Pro</div>
         <nav>
-            <button onclick="location.href='main.html'">Хочу работать</button>
-            <button onclick="location.href='create.html'">Создать вакансию</button>
-            <button onclick="location.href='myjob.html'">Мои вакансии</button>
+            <button onclick="location.href='../main/main.html'">Хочу работать</button>
+            <button onclick="location.href='../create/create.html'">Создать вакансию</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
             <button onclick="logout()">Выход</button>
             <span id="welcome-message" style="display: none;"></span>
         </nav>
@@ -43,38 +43,6 @@
         </div>
     </main>
 
-    <script>
-        function logout() {
-            if (confirm('Выйти из системы?')) {
-                location.href = 'index.html';
-            }
-        }
-
-        // Простая валидация формы
-        document.getElementById('create-job-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const title = this.querySelector('[name="title"]').value;
-            const company = this.querySelector('[name="company"]').value;
-            const salary = this.querySelector('[name="salary"]').value;
-            
-            if (title && company && salary) {
-                const message = this.querySelector('.form-message');
-                message.textContent = 'Вакансия успешно создана!';
-                message.className = 'form-message success';
-                
-                // Очистка формы
-                setTimeout(() => {
-                    this.reset();
-                    message.textContent = 'Заполните все поля для создания новой вакансии';
-                    message.className = 'form-message';
-                }, 2000);
-            } else {
-                const message = this.querySelector('.form-message');
-                message.textContent = 'Пожалуйста, заполните все обязательные поля';
-                message.className = 'form-message';
-            }
-        });
-    </script>
+    <script src="create.js"></script>
 </body>
 </html>

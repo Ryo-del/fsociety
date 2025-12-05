@@ -10,9 +10,9 @@
     <header>
         <div class="logo">Job Finder Pro</div>
         <nav>
-            <button onclick="location.href='main.html'">Вакансии</button>
-            <button onclick="location.href='create.html'">Создать вакансию</button>
-            <button onclick="location.href='myjob.html'">Мои вакансии</button>
+            <button onclick="location.href='../main/main.html'">Хочу работать</button>
+            <button onclick="location.href='../create/create.html'">Создать вакансию</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
             <button onclick="logout()">Выход</button>
             <span id="welcome-message">Имя пользователя</span>
         </nav>
@@ -102,12 +102,6 @@
         </div>
     </main>
 
-    <script>
-        function logout() {
-            if (confirm('Выйти из системы?')) {
-                location.href = 'index.html';
-            }
-        }
-    </script>
+    <script src="myjob.js"></script>
 </body>
 </html>

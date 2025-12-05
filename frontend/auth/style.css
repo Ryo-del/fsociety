@@ -181,10 +181,11 @@ body {
 .password-toggle {
     position: absolute;
     right: 15px;
-    top: 42px;
+    top: 5px;
     color: #666;
     cursor: pointer;
     font-size: 1.1rem;
+    z-index: 2;
 }
 
 .info-message {

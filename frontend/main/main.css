@@ -40,133 +40,126 @@ nav button {
     padding: 8px 16px;
     border-radius: 20px;
     cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 nav button:hover {
     background-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
 }
 
 #welcome-message {
-    color: white;
     margin-left: 15px;
     font-weight: 500;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    font-size: 1.1em;
 }
 
 main {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
-
-/* Стили для страницы вакансий */
-#jobs-list-container {
-    background-color: white;
     padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.form-container {
+    background-color: white;
+    padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    animation: fadeIn 0.5s ease;
-}
-
-#jobs-list-container h2 {
-    text-align: center;
-    color: #667eea;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     margin-bottom: 30px;
-    font-size: 1.8em;
 }
 
+.form-container h2 {
+    color: #4b6cb7;
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+/* Стили для фильтров */
 .filters {
     display: flex;
     gap: 15px;
     margin-bottom: 30px;
-    flex-wrap: wrap;
 }
 
 .filters input, .filters select {
-    flex: 1;
-    min-width: 200px;
-    padding: 12px;
-    border: 2px solid #e1e5e9;
+    padding: 12px 15px;
+    border: 1px solid #ced4da;
     border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
+    font-size: 1em;
+    flex-grow: 1;
 }
 
-.filters input:focus, .filters select:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+#search-input {
+    flex-grow: 2;
 }
 
+/* Стили для списка вакансий */
 #jobs-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 25px;
 }
 
 .job-card {
-    background: white;
-    border-radius: 12px;
+    background-color: #ffffff;
     padding: 25px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    cursor: pointer;
-    position: relative;
-    animation: fadeIn 0.3s ease;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 .job-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-    border-color: #667eea;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
 }
 
 .job-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
-.job-card h3 {
+.job-card-header h3 {
     margin: 0;
-    color: #333;
-    font-size: 1.3em;
-    flex: 1;
+    font-size: 1.4em;
+    color: #343a40;
 }
 
 .job-type {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: #667eea;
     color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8em;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75em;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .job-card-company {
-    color: #666;
-    margin-bottom: 10px;
-    font-weight: 500;
+    color: #4b6cb7;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 1em;
 }
 
 .job-card-salary {
-    font-size: 1.2em;
     color: #28a745;
     font-weight: bold;
-    margin: 10px 0;
+    margin-bottom: 15px;
+    font-size: 1.1em;
 }
 
 .job-card-skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 15px 0;
+    gap: 5px;
+    margin-bottom: 15px;
 }
 
 .skill-tag {
@@ -177,20 +170,78 @@ main {
     color: #495057;
 }
 
+/* СТИЛИ ДЛЯ РАЗВОРАЧИВАНИЯ (НОВЫЕ ИЛИ ИСПРАВЛЕННЫЕ) */
+
 .job-description {
     color: #6c757d;
-    margin: 15px 0;
+    margin: 15px 0 5px 0; /* Уменьшаем нижний отступ */
     font-size: 0.95em;
     line-height: 1.5;
+    /* Ограничиваем тремя строками */
+    max-height: 4.5em; 
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
 }
+
+/* При наличии класса expanded на родительской карточке, описание разворачивается */
+.job-card.expanded .job-description {
+    max-height: 1000px; /* Достаточно большое значение для показа всего текста */
+    overflow: visible;
+}
+
+/* Стили для кнопки разворачивания */
+.toggle-btn {
+    background: none;
+    border: none;
+    color: #667eea; 
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-top: 5px;
+    padding: 0;
+    display: block;
+    text-align: left;
+    transition: color 0.2s ease;
+    align-self: flex-start; /* Прижимаем к левому краю */
+}
+
+.toggle-btn:hover {
+    color: #4b6cb7;
+}
+/* КОНЕЦ СТИЛЕЙ РАЗВОРАЧИВАНИЯ */
+
 
 .job-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    margin-top: auto; /* Прижимаем футер к низу */
     padding-top: 15px;
     border-top: 1px solid #eee;
+    margin-top: 15px; 
+}
+
+.job-actions {
+    margin-top: 15px;
+}
+
+.job-actions button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.job-actions .primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.job-actions .primary:hover {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 .job-location {
@@ -209,8 +260,19 @@ main {
     font-weight: 500;
     padding: 12px;
     border-radius: 8px;
+    color: #333; /* Default text color */
+    background-color: #f0f0f0; /* Default background */
+    grid-column: 1 / -1; /* Растянуть на всю ширину в гриде */
+}
+
+.form-message.error {
     color: #dc3545;
     background-color: rgba(220, 53, 69, 0.1);
+}
+
+.form-message.info {
+    color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
 }
 
 .form-message.success {
@@ -218,9 +280,14 @@ main {
     background-color: rgba(40, 167, 69, 0.1);
 }
 
-.form-message.info {
-    color: #17a2b8;
-    background-color: rgba(23, 162, 184, 0.1);
+.no-jobs {
+    text-align: center;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+    grid-column: 1 / -1;
+    color: #6c757d;
 }
 
 /* Адаптивность */
@@ -235,28 +302,12 @@ main {
         flex-wrap: wrap;
         justify-content: center;
     }
-    
-    #jobs-list {
-        grid-template-columns: 1fr;
-    }
-    
+
     .filters {
         flex-direction: column;
     }
     
-    #jobs-list-container {
-        padding: 25px;
-    }
-}
-
-/* Анимации */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    main {
+        padding: 20px;
     }
 }

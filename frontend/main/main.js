@@ -1,7 +1,181 @@
-// Функция для загрузки всех вакансий
-async function loadJobs() {
+// Global constants
+const API_BASE_URL = window.location.origin;
+let allJobs = []; // Хранит все загруженные вакансии для фильтрации
+
+// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (УВЕДОМЛЕНИЯ, АВТОРИЗАЦИЯ, ВЫХОД) ---
+
+function notify(text, type = "info") {
+    const box = document.createElement("div");
+    box.className = `notification ${type}`;
+    box.textContent = text;
+    document.body.appendChild(box);
+    setTimeout(() => box.classList.add("show"), 10);
+    setTimeout(() => box.remove(), 3500);
+}
+
+function showMessage(container, text, isError = false) {
+    let msgElement = document.querySelector('#jobs-list-container .form-message');
+    if (!msgElement && container) {
+        // Создаем элемент сообщения, если его нет
+        msgElement = document.createElement('p');
+        msgElement.className = 'form-message';
+        // Вставляем после контейнера (jobs-list-container)
+        container.parentNode.insertBefore(msgElement, container.nextSibling); 
+    }
+    if (msgElement) {
+        msgElement.textContent = text;
+        msgElement.className = isError ? 'form-message error' : 'form-message info';
+    }
+}
+
+async function initPage() {
     try {
-        const response = await fetch(`${API_BASE_URL}/job`, {
+        const res = await fetch(`${API_BASE_URL}/checkauth`, { credentials: "include" });
+        if (!res.ok) {
+            location.href = "../auth/login.html";
+            return false;
+        }
+
+        const user = await res.json();
+        const welcomeMessage = document.getElementById("welcome-message");
+        if (welcomeMessage) {
+            welcomeMessage.textContent = user.name || user.username || "Пользователь";
+            welcomeMessage.style.display = 'inline';
+        }
+        
+        return true;
+    } catch {
+        location.href = "../auth/login.html";
+        return false;
+    }
+}
+
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (e) {
+        console.error("Logout failed but proceeding with redirect:", e);
+    }
+    location.href = "../auth/login.html";
+}
+
+
+// --- ОСНОВНАЯ ЛОГИКА ОТОБРАЖЕНИЯ И ЗАГРУЗКИ ---
+
+function parseSalary(salaryStr) {
+    if (!salaryStr) return 0;
+    const cleanStr = salaryStr.replace(/[^\d\s\-,]/g, ''); 
+    const parts = cleanStr.split(/[\s\-]/);
+    
+    for (const part of parts) {
+        const num = parseFloat(part.replace(/,/g, ''));
+        if (!isNaN(num)) return num;
+    }
+    return 0;
+}
+
+// ФУНКЦИЯ: Переключение описания
+function toggleDescription(button) {
+    // Находим родительскую карточку
+    const jobCard = button.closest('.job-card');
+    
+    if (jobCard.classList.contains('expanded')) {
+        jobCard.classList.remove('expanded');
+        button.textContent = 'Показать больше...';
+    } else {
+        jobCard.classList.add('expanded');
+        button.textContent = 'Показать меньше...';
+    }
+}
+
+
+// Создание HTML-карточки вакансии
+function createJobCard(job) {
+    const jobCard = document.createElement('div');
+    jobCard.className = 'job-card';
+    jobCard.dataset.id = job.id;
+    
+    // ИСПРАВЛЕНО: job.JobType -> job.job_type
+    jobCard.dataset.type = job.job_type || 'full'; 
+    jobCard.dataset.salary = parseSalary(job.salary);
+
+    // ИСПРАВЛЕНО: job.Skills -> job.skills
+    const skills = job.skills
+        ? job.skills.split(",").map(s => `<span class="skill-tag">${s.trim()}</span>`).join("")
+        : "<span class='skill-tag'>Навыки не указаны</span>";
+    
+    // ИСПРАВЛЕНО: job.JobType -> job.job_type
+    const jobTypeDisplay = {
+        'full': 'Полная занятость',
+        'part': 'Частичная занятость',
+        'remote': 'Удалённая работа',
+        'internship': 'Стажировка'
+    }[job.job_type] || 'Не указано';
+
+    // ИСПРАВЛЕНО: job.Location -> job.location
+    const jobLocation = job.location || 'Город не указан'; 
+
+    jobCard.innerHTML = `
+        <div class="job-card-header">
+            <h3>${job.title}</h3>
+            <span class="job-type">${jobTypeDisplay}</span>
+        </div>
+        <div class="job-card-company">${job.company || "Компания не указана"}</div>
+        <div class="job-card-salary">${job.salary || "Зарплата не указана"}</div>
+        <div class="job-card-skills">${skills}</div>
+        
+        <p class="job-description">${job.description}</p>
+        <button class="toggle-btn" onclick="toggleDescription(this)">Показать больше...</button>
+
+        <div class="job-card-footer">
+            <span class="job-location">${jobLocation}</span>
+            <span class="job-date">Сегодня</span> 
+        </div>
+        <div class="job-actions"> 
+            <button class="primary" onclick="notify('Отклик на вакансию ${job.title} отправлен!', 'success')">Откликнуться</button>
+        </div>
+    `;
+    
+    return jobCard;
+}
+
+// Обновление счетчика вакансий
+function updateJobCount(count) {
+    const container = document.getElementById('jobs-list-container');
+    showMessage(container, `Найдено ${count} вакансий`, false);
+}
+
+
+// Отрисовка списка вакансий
+function renderJobs(jobs) {
+    const jobsList = document.getElementById('jobs-list');
+    if (!jobsList) return;
+    
+    jobsList.innerHTML = '';
+    
+    if (jobs.length === 0) {
+        jobsList.innerHTML = '<p class="no-jobs">Нет доступных вакансий, соответствующих фильтрам</p>';
+        return;
+    }
+    
+    jobs.forEach(job => {
+        const jobCard = createJobCard(job);
+        jobsList.appendChild(jobCard);
+    });
+}
+
+
+// Загрузка всех вакансий (URL /showjobs)
+async function loadJobs() {
+    const container = document.getElementById('jobs-list-container');
+    showMessage(container, 'Загрузка всех вакансий...', false);
+
+    try {
+        // Проверено: Используется правильный endpoint /showjobs
+        const response = await fetch(`${API_BASE_URL}/showjobs`, { 
             method: 'GET',
             credentials: 'include'
         });
@@ -10,253 +184,86 @@ async function loadJobs() {
             throw new Error(`Ошибка: ${response.status}`);
         }
         
-        const jobs = await response.json();
-        renderJobs(jobs);
-        updateJobCount(jobs.length);
+        const responseText = await response.text();
+        if (!responseText.trim() || responseText.trim() === '[]') {
+            allJobs = [];
+        } else {
+            allJobs = JSON.parse(responseText);
+        }
+
+        renderJobs(allJobs);
+        updateJobCount(allJobs.length);
+
     } catch (error) {
         console.error('Error loading jobs:', error);
-        showMessage(document.getElementById('jobs-list-container'), 'Ошибка загрузки вакансий', true);
+        showMessage(container, 'Ошибка загрузки вакансий: ' + error.message, true);
     }
 }
 
-// Функция для отображения вакансий
-function renderJobs(jobs) {
-    const jobsList = document.getElementById('jobs-list');
-    jobsList.innerHTML = '';
-    
-    if (jobs.length === 0) {
-        jobsList.innerHTML = '<p class="no-jobs">Нет доступных вакансий</p>';
-        return;
-    }
-    
-    jobs.forEach(job => {
-        const jobCard = createJobCard(job);
-        jobsList.appendChild(jobCard);
-    });
-    
-    // Применяем фильтры
-    applyFilters();
-}
 
-// Функция создания карточки вакансии
-function createJobCard(job) {
-    const jobCard = document.createElement('div');
-    jobCard.className = 'job-card';
-    jobCard.dataset.id = job.id;
-    jobCard.dataset.type = job.job_type || 'full';
-    jobCard.dataset.salary = parseSalary(job.salary);
-    
-    // Определяем тип вакансии
-    const jobTypeMap = {
-        'full': 'Полная занятость',
-        'part': 'Частичная занятость',
-        'remote': 'Удалённая работа',
-        'internship': 'Стажировка'
-    };
-    
-    const jobType = jobTypeMap[job.job_type] || 'Полная занятость';
-    
-    // Разбиваем навыки на теги
-    const skills = job.skills ? job.skills.split(',').map(skill => skill.trim()) : [];
-    const skillsHTML = skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('');
-    
-    jobCard.innerHTML = `
-        <div class="job-card-header">
-            <h3>${job.title || 'Название не указано'}</h3>
-            <span class="job-type">${jobType}</span>
-        </div>
-        <div class="job-card-company">${job.company || 'Компания не указана'}</div>
-        <div class="job-card-salary">${job.salary || 'Зарплата не указана'}</div>
-        <div class="job-card-skills">
-            ${skillsHTML || '<span class="no-skills">Навыки не указаны</span>'}
-        </div>
-        <p class="job-description">${job.description || 'Описание отсутствует'}</p>
-        <div class="job-card-footer">
-            <span class="job-location">${job.location || 'Локация не указана'}</span>
-            <span class="job-date">${formatDate(job.created_at)}</span>
-        </div>
-    `;
-    
-    return jobCard;
-}
+// --- ЛОГИКА ФИЛЬТРАЦИИ ---
 
-// Вспомогательная функция для парсинга зарплаты
-function parseSalary(salary) {
-    if (!salary) return 0;
-    
-    // Извлекаем числа из строки зарплаты
-    const numbers = salary.match(/\d+/g);
-    if (!numbers) return 0;
-    
-    // Берем первое число как среднюю зарплату
-    return parseInt(numbers[0]);
-}
-
-// Вспомогательная функция для форматирования даты
-function formatDate(dateString) {
-    if (!dateString) return 'Дата не указана';
-    
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('ru-RU');
-    } catch (e) {
-        return dateString;
-    }
-}
-
-// Функция обновления счетчика вакансий
-function updateJobCount(count) {
-    const messageElement = document.querySelector('.form-message.info');
-    if (messageElement) {
-        messageElement.textContent = `Найдено ${count} вакансий`;
-    }
-}
-
-// Функция применения фильтров
 function applyFilters() {
-    const searchInput = document.getElementById('search-input').value.toLowerCase();
-    const typeFilter = document.getElementById('job-type-filter').value;
-    const salaryFilter = document.getElementById('salary-filter').value;
+    const searchInput = document.getElementById('search-input');
+    const typeFilter = document.getElementById('job-type-filter');
+    const salaryFilter = document.getElementById('salary-filter'); 
+
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+    const selectedType = typeFilter ? typeFilter.value : '';
+    const selectedSalaryRange = salaryFilter ? salaryFilter.value : '0'; 
     
-    const jobCards = document.querySelectorAll('.job-card');
-    let visibleCount = 0;
-    
-    jobCards.forEach(card => {
-        let show = true;
+    let filteredJobs = allJobs.filter(job => {
+        // ИСПРАВЛЕНО: job.Title -> job.title, job.Company -> job.company
+        const matchesSearch = !searchTerm || 
+            (job.title && job.title.toLowerCase().includes(searchTerm)) ||
+            (job.company && job.company.toLowerCase().includes(searchTerm));
+
+        // ИСПРАВЛЕНО: job.JobType -> job.job_type
+        const matchesType = !selectedType || job.job_type === selectedType;
+
+        // Фильтр по зарплате (использует job.salary)
+        let matchesSalary = true;
+        const jobSalaryMin = parseSalary(job.salary);
+        const minSalaryThreshold = parseInt(selectedSalaryRange); 
         
-        // Фильтр по поиску
-        if (searchInput) {
-            const title = card.querySelector('h3').textContent.toLowerCase();
-            const company = card.querySelector('.job-card-company').textContent.toLowerCase();
-            if (!title.includes(searchInput) && !company.includes(searchInput)) {
-                show = false;
-            }
+        if (!isNaN(minSalaryThreshold)) {
+            matchesSalary = jobSalaryMin >= minSalaryThreshold;
         }
         
-        // Фильтр по типу
-        if (typeFilter && card.dataset.type !== typeFilter) {
-            show = false;
-        }
-        
-        // Фильтр по зарплате
-        if (salaryFilter) {
-            const salary = parseInt(card.dataset.salary);
-            switch (salaryFilter) {
-                case '0-50000':
-                    if (salary > 50000) show = false;
-                    break;
-                case '50000-100000':
-                    if (salary < 50000 || salary > 100000) show = false;
-                    break;
-                case '100000-200000':
-                    if (salary < 100000 || salary > 200000) show = false;
-                    break;
-                case '200000+':
-                    if (salary < 200000) show = false;
-                    break;
-            }
-        }
-        
-        card.style.display = show ? 'block' : 'none';
-        if (show) visibleCount++;
+        return matchesSearch && matchesType && matchesSalary;
     });
-    
-    updateJobCount(visibleCount);
-}
-// Функция выхода
-async function logout() {
-    if (!confirm('Выйти из системы?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        
-        // Явно удаляем ВСЕ возможные cookies на клиенте
-        const cookies = document.cookie.split(";");
-        
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i];
-            const eqPos = cookie.indexOf("=");
-            const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-            
-            // Удаляем каждый cookie
-            document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname + ";";
-        }
-        
-        // Также очищаем localStorage и sessionStorage
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Добавляем параметр к URL, чтобы предотвратить автоматический вход
-        window.location.href = '../index.html?logout=true&t=' + new Date().getTime();
-        
-    } catch (error) {
-        console.error('Logout error:', error);
-        // В случае ошибки все равно перенаправляем с параметром
-        window.location.href = '../index.html?logout=true&t=' + new Date().getTime();
-    }
+
+    renderJobs(filteredJobs);
+    updateJobCount(filteredJobs.length);
 }
 
-// Обновленная функция initPage с правильной привязкой кнопок выхода
-async function initPage() {
-    // Проверяем авторизацию
-    const authState = await checkAuth();
-    
-    if (!authState.isAuthenticated) {
-        // Если не авторизован, перенаправляем на страницу входа
-        window.location.href = '../index.html';
-        return;
-    }
-    
-    // Обновляем приветственное сообщение, если есть элемент
-    const welcomeMessage = document.getElementById('welcome-message');
-    if (welcomeMessage) {
-        welcomeMessage.textContent = `Добро пожаловать, ${authState.username}!`;
-        welcomeMessage.style.display = 'inline';
-    }
-    
-    // Находим все кнопки выхода и вешаем обработчики
-    const logoutButtons = document.querySelectorAll('button');
-    logoutButtons.forEach(button => {
-        // Проверяем текст кнопки или атрибут onclick
-        if (button.textContent.trim() === 'Выход' || 
-            button.textContent.trim() === 'Logout' ||
-            (button.onclick && button.onclick.toString().includes('logout'))) {
-            
-            // Удаляем старые обработчики
-            button.onclick = null;
-            
-            // Добавляем новый обработчик
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                logout();
-            });
-        }
-    });
-    
-    // Также обрабатываем кнопки с атрибутом onclick="logout()"
-    const logoutInlineButtons = document.querySelectorAll('[onclick*="logout"]');
-    logoutInlineButtons.forEach(button => {
-        button.removeAttribute('onclick');
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            logout();
-        });
-    });
-}
-// Инициализация страницы main.html
+// --- ИНИЦИАЛИЗАЦИЯ ---
+
 document.addEventListener('DOMContentLoaded', async function() {
+    // 1. Проверка авторизации
     await initPage();
     
-    // Загружаем вакансии
+    // 2. Загрузка всех вакансий
     await loadJobs();
     
-    // Назначаем обработчики фильтров
-    document.getElementById('search-input').addEventListener('input', applyFilters);
-    document.getElementById('job-type-filter').addEventListener('change', applyFilters);
-    document.getElementById('salary-filter').addEventListener('change', applyFilters);
+    // 3. Назначение обработчиков для фильтров
+    const searchInput = document.getElementById('search-input');
+    const typeFilter = document.getElementById('job-type-filter');
+    const salaryFilter = document.getElementById('salary-filter'); 
+
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilters);
+    }
+    if (typeFilter) {
+        typeFilter.addEventListener('change', applyFilters);
+    }
+    if (salaryFilter) {
+        salaryFilter.addEventListener('change', applyFilters);
+    }
+    
+    // Назначение обработчика выхода (для кнопки в header)
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
 });

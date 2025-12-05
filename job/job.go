@@ -21,6 +21,9 @@ type Job struct {
 	Description string `json:"description"`
 	Salary      string `json:"salary"`
 	Skills      string `json:"skills"`
+	Location    string `json:"location,omitempty"`
+	Experience  string `json:"experience,omitempty"`
+	JobType     string `json:"job_type,omitempty"`
 }
 
 var db string = "job.json"
@@ -164,6 +167,9 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Description: r.FormValue("description"),
 		Salary:      r.FormValue("salary"),
 		Skills:      r.FormValue("skills"),
+		Location:    r.FormValue("location"),
+		Experience:  r.FormValue("experience"),
+		JobType:     r.FormValue("job_type"),
 	}
 
 	// 5. Добавляем новую вакансию в список
@@ -235,6 +241,7 @@ func GetAllHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	// Просто возвращаем весь список вакансий
 	json.NewEncoder(w).Encode(jobs)
 }
 

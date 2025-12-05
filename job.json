@@ -18,5 +18,18 @@
     "description": "3",
     "salary": "3",
     "skills": "3"
+  },
+  {
+    "id": "9adbc566-a1f7-43d4-ad08-565c58ba2ed7",
+    "user_id": "e5de68a0-77b0-45d7-82bb-a809da16d6db",
+    "title": "1",
+    "company": "1",
+    "school": "",
+    "description": "1",
+    "salary": "1",
+    "skills": "1",
+    "location": "1",
+    "experience": "1",
+    "job_type": "part"
   }
 ]

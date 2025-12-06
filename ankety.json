@@ -1,29 +1,14 @@
 [
   {
-    "id": "19787c50-892f-493a-b0b3-2ae335690382",
-    "user_id": "19f2387e-3705-4275-b436-47fb00b2a59a",
-    "name": "Хуй",
-    "gender": "male",
-    "age": "17",
-    "job": "it",
-    "school": "Тавиак"
-  },
-  {
-    "id": "d1cc2f6d-c354-44b0-a098-6264c1fdacee",
-    "user_id": "18bc055e-d5d7-4002-8113-2bf6565659c1",
-    "name": "1",
-    "gender": "female",
-    "age": "16",
-    "job": "1",
-    "school": "1"
-  },
-  {
-    "id": "c28833b8-799a-462b-aae8-794e82e0a41a",
-    "user_id": "18bc055e-d5d7-4002-8113-2bf6565659c1",
-    "name": "34",
-    "gender": "male",
-    "age": "34",
-    "job": "34",
-    "school": "34"
+    "id": "673675e3-6d70-4230-a33e-b3b58394b716",
+    "user_id": "e5de68a0-77b0-45d7-82bb-a809da16d6db",
+    "name": "qqwe",
+    "gender": "мужской",
+    "age": "44",
+    "job": "23",
+    "school": "32",
+    "skills": "23",
+    "photo": "",
+    "description": "23"
   }
 ]

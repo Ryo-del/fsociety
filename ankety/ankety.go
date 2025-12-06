@@ -29,112 +29,63 @@ type Ankety struct {
 var anketybase string = "ankety.json"
 
 func LoadUser() ([]Ankety, error) {
+	// Проверяем существование файла
+	if _, err := os.Stat(anketybase); os.IsNotExist(err) {
+		// Создаем файл с пустым массивом
+		fmt.Println("Файл ankety.json не найден, создаем новый...")
+		emptyData := []Ankety{}
+		data, err := json.MarshalIndent(emptyData, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		err = os.WriteFile(anketybase, data, 0644)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("Файл ankety.json успешно создан")
+		return emptyData, nil
+	}
+
 	data, err := os.ReadFile(anketybase)
 	if err != nil {
-		// Если файл не существует, создаем пустой массив
-		if os.IsNotExist(err) {
-			return []Ankety{}, nil
-		}
 		fmt.Printf("Ошибка чтения файла %s: %v\n", anketybase, err)
 		return nil, err
 	}
+
+	// Проверяем, не пустой ли файл
+	if len(data) == 0 {
+		return []Ankety{}, nil
+	}
+
 	var ankety []Ankety
 	err = json.Unmarshal(data, &ankety)
 	if err != nil {
 		fmt.Printf("Ошибка разбора JSON из файла %s: %v\n", anketybase, err)
 		return nil, err
 	}
+	fmt.Printf("Загружено %d анкет из файла\n", len(ankety))
 	return ankety, nil
 }
 
 // Обновите CreateHandler
-func CreateHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// ПАРСИМ ФОРМУ ПЕРВЫМ ДЕЛОМ
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
-		return
-	}
-
-	name := r.FormValue("name")
-	gender := r.FormValue("gender")
-	age := r.FormValue("age")
-	job := r.FormValue("job")
-	school := r.FormValue("school")
-	skills := r.FormValue("skills")
-	description := r.FormValue("description")
-
-	if name == "" || age == "" || job == "" || school == "" || gender == "" || skills == "" {
-		http.Error(w, "Missing required fields", http.StatusBadRequest)
-		return
-	}
-
-	// Получаем userID из токена
-	cookie, err := r.Cookie("auth_token")
-	if err != nil {
-		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
-		return
-	}
-	userID, _, err := auth.ValidateJWT(cookie.Value)
-	if err != nil {
-		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
-		return
-	}
-
-	anketyList, err := LoadUser()
-	if err != nil {
-		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
-		return
-	}
-
-	// Проверяем, существует ли уже анкета для этого пользователя
-	for _, a := range anketyList {
-		if a.UserId == userID {
-			// Возвращаем ошибку или можно обновить существующую
-			http.Error(w, "Ankety already exists for this user", http.StatusBadRequest)
-			return
-		}
-	}
-
-	// Создаем новую анкету
-	anketa := Ankety{
-		Id:          uuid.New().String(),
-		UserId:      userID,
-		Name:        name,
-		Gender:      gender,
-		Age:         age,
-		Job:         job,
-		School:      school,
-		Skills:      skills,
-		Description: description,
-		Photo:       "",
-	}
-
-	anketyList = append(anketyList, anketa)
+func SaveAnkety(anketyList []Ankety) error {
+	fmt.Printf("Сохранение %d анкет в файл...\n", len(anketyList))
 	updatedData, err := json.MarshalIndent(anketyList, "", "  ")
 	if err != nil {
-		http.Error(w, "Error encoding data", http.StatusInternalServerError)
-		return
+		fmt.Printf("Ошибка кодирования данных: %v\n", err)
+		return err
 	}
 
 	err = os.WriteFile(anketybase, updatedData, 0644)
 	if err != nil {
-		http.Error(w, "Error writing data file", http.StatusInternalServerError)
-		return
+		fmt.Printf("Ошибка записи в файл %s: %v\n", anketybase, err)
+		return err
 	}
 
-	// Возвращаем успешный ответ
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Anketa created successfully",
-		"id":      anketa.Id,
-	})
+	fmt.Println("Анкеты успешно сохранены в файл")
+	return nil
 }
+
 func ShowAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -157,9 +108,141 @@ func ShowAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseData)
 }
+func CreateHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("=== ОБРАБОТЧИК СОЗДАНИЯ АНКЕТЫ ===")
+	fmt.Printf("Метод: %s\n", r.Method)
+	fmt.Printf("Content-Type: %s\n", r.Header.Get("Content-Type"))
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// ПАРСИМ ФОРМУ ПЕРВЫМ ДЕЛОМ
+	if err := r.ParseForm(); err != nil {
+		fmt.Printf("Ошибка парсинга формы: %v\n", err)
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+
+	// Логируем все полученные значения
+	fmt.Println("Полученные значения формы:")
+	for key, values := range r.Form {
+		fmt.Printf("  %s: %v\n", key, values)
+	}
+
+	name := r.FormValue("name")
+	gender := r.FormValue("gender")
+	age := r.FormValue("age")
+	job := r.FormValue("job")
+	school := r.FormValue("school")
+	skills := r.FormValue("skills")
+	description := r.FormValue("description")
+
+	fmt.Printf("Поля анкеты: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s'\n",
+		name, gender, age, job, school, skills)
+
+	if name == "" || age == "" || job == "" || school == "" || gender == "" || skills == "" {
+		errorMsg := "Missing required fields: "
+		if name == "" {
+			errorMsg += "name "
+		}
+		if age == "" {
+			errorMsg += "age "
+		}
+		if job == "" {
+			errorMsg += "job "
+		}
+		if school == "" {
+			errorMsg += "school "
+		}
+		if gender == "" {
+			errorMsg += "gender "
+		}
+		if skills == "" {
+			errorMsg += "skills "
+		}
+		fmt.Println("Ошибка: " + errorMsg)
+		http.Error(w, errorMsg, http.StatusBadRequest)
+		return
+	}
+
+	// Получаем userID из токена
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		fmt.Println("Ошибка: отсутствует токен авторизации")
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		return
+	}
+
+	userID, username, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		fmt.Printf("Ошибка валидации токена: %v\n", err)
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Printf("Пользователь: ID=%s, username=%s\n", userID, username)
+
+	anketyList, err := LoadUser()
+	if err != nil {
+		fmt.Printf("Ошибка загрузки анкет: %v\n", err)
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Проверяем, существует ли уже анкета для этого пользователя
+	for _, a := range anketyList {
+		if a.UserId == userID {
+			fmt.Printf("Анкета для пользователя %s уже существует\n", userID)
+			// Возвращаем ошибку или можно обновить существующую
+			http.Error(w, "Ankety already exists for this user", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Создаем новую анкету
+	newID := uuid.New().String()
+	anketa := Ankety{
+		Id:          newID,
+		UserId:      userID,
+		Name:        name,
+		Gender:      gender,
+		Age:         age,
+		Job:         job,
+		School:      school,
+		Skills:      skills,
+		Description: description,
+		Photo:       "",
+	}
+
+	fmt.Printf("Создана новая анкета: ID=%s, UserID=%s, Name=%s\n", newID, userID, name)
+
+	anketyList = append(anketyList, anketa)
+
+	// Сохраняем анкеты
+	err = SaveAnkety(anketyList)
+	if err != nil {
+		fmt.Printf("Ошибка сохранения анкет: %v\n", err)
+		http.Error(w, "Error writing data file", http.StatusInternalServerError)
+		return
+	}
+
+	// Возвращаем успешный ответ
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	response := map[string]string{
+		"message": "Anketa created successfully",
+		"id":      anketa.Id,
+	}
+	fmt.Printf("Отправлен ответ: %v\n", response)
+	json.NewEncoder(w).Encode(response)
+}
 
 // Обработчик для обновления анкеты
 func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("=== ОБРАБОТЧИК ОБНОВЛЕНИЯ АНКЕТЫ ===")
+
 	if r.Method != http.MethodPut && r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -167,6 +250,7 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// ПАРСИМ ФОРМУ ПЕРВЫМ ДЕЛОМ
 	if err := r.ParseForm(); err != nil {
+		fmt.Printf("Ошибка парсинга формы: %v\n", err)
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
 	}
@@ -180,6 +264,9 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	school := r.FormValue("school")
 	skills := r.FormValue("skills")
 	description := r.FormValue("description")
+
+	fmt.Printf("Обновление анкеты ID=%s: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s'\n",
+		id, name, gender, age, job, school, skills)
 
 	if id == "" || name == "" || gender == "" || age == "" || job == "" || school == "" || skills == "" {
 		http.Error(w, "Missing fields", http.StatusBadRequest)
@@ -222,28 +309,26 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 			anketyList[i].Photo = photo // Сохраняем старое фото
 			anketyList[i].Description = description
 			found = true
+
+			fmt.Printf("Анкета обновлена: ID=%s\n", id)
 			break
 		}
 	}
 
 	if !found {
+		fmt.Printf("Анкета не найдена: ID=%s, UserID=%s\n", id, userID)
 		http.Error(w, "Ankety not found or access denied", http.StatusNotFound)
 		return
 	}
 
 	// Сохраняем обновленные данные
-	updatedData, err := json.MarshalIndent(anketyList, "", "  ")
-	if err != nil {
-		http.Error(w, "Error encoding data", http.StatusInternalServerError)
-		return
-	}
-
-	err = os.WriteFile(anketybase, updatedData, 0644)
+	err = SaveAnkety(anketyList)
 	if err != nil {
 		http.Error(w, "Error writing data file", http.StatusInternalServerError)
 		return
 	}
 
+	fmt.Println("Анкета успешно обновлена")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Profile updated successfully"))
 }

@@ -29,6 +29,7 @@ type Ankety struct {
 	City        string `json:"city"`
 	Jobtype     string `json:"jobtype"`
 	Description string `json:"description,omitempty"`
+	Telegram    string `json:"telegram,omitempty"`
 }
 
 var anketybase string = "ankety.json"
@@ -143,6 +144,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	school := r.FormValue("school")
 	skills := r.FormValue("skills")
 	description := r.FormValue("description")
+	telegram := r.FormValue("telegram")
 
 	fmt.Printf("Поля анкеты: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s'\n",
 		name, gender, age, job, school, skills)
@@ -166,6 +168,9 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		if skills == "" {
 			errorMsg += "skills "
+		}
+		if telegram == "" {
+			errorMsg += "telegram "
 		}
 		fmt.Println("Ошибка: " + errorMsg)
 		http.Error(w, errorMsg, http.StatusBadRequest)
@@ -224,6 +229,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Salary:      r.FormValue("salary"),
 		Experience:  r.FormValue("experience"),
 		Jobtype:     r.FormValue("jobtype"),
+		Telegram:    telegram,
 	}
 
 	fmt.Printf("Создана новая анкета: ID=%s, UserID=%s, Name=%s\n", newID, userID, name)
@@ -274,6 +280,7 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	school := r.FormValue("school")
 	skills := r.FormValue("skills")
 	description := r.FormValue("description")
+	telegram := r.FormValue("telegram")
 
 	fmt.Printf("Обновление анкеты ID=%s: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s'\n",
 		id, name, gender, age, job, school, skills)
@@ -323,6 +330,7 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 			anketyList[i].Salary = r.FormValue("salary")
 			anketyList[i].Experience = r.FormValue("experience")
 			anketyList[i].Jobtype = r.FormValue("jobtype")
+			anketyList[i].Telegram = telegram
 			found = true
 
 			fmt.Printf("Анкета обновлена: ID=%s\n", id)

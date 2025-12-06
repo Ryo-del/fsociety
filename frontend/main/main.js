@@ -124,25 +124,32 @@ function toggleDescription(button) {
 }
 
 // Функция для обработки отклика на объявления
-function respondToJob(jobTitle, telegramUsername) {
+async function sendInvite(candidateId) {
+    // Найти кандидата по ID
+    const candidate = allCandidates.find(c => c.id == candidateId);
+    
+    if (!candidate) {
+        alert('Кандидат не найден');
+        return;
+    }
+    
+    // Проверить наличие Telegram
+    if (!candidate.telegram || candidate.telegram === 'Не указан') {
+        alert('У кандидата не указан Telegram');
+        return;
+    }
+    
     // Формируем ссылку на Telegram
-    let telegramLink;
-    
-    // Убираем @ если есть в начале
-    const cleanUsername = telegramUsername.replace(/^@/, '');
-    
-    // Формируем ссылку для открытия чата в Telegram
-    telegramLink = `https://t.me/${cleanUsername}`;
+    const cleanUsername = candidate.telegram.replace(/^@/, '');
+    const telegramLink = `https://t.me/${cleanUsername}`;
     
     // Показываем уведомление
-    notify(`Вы откликаетесь на объявление "${jobTitle}". Открываю Telegram...`, 'success');
+    notify(`Вы приглашаете ${candidate.name} на позицию "${candidate.title}". Открываю Telegram...`, 'success');
     
     // Открываем ссылку в новой вкладке
     setTimeout(() => {
         window.open(telegramLink, '_blank');
     }, 500);
-    
-    return false;
 }
 
 // Создание HTML-карточки объявления

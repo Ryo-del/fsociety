@@ -411,6 +411,7 @@ function openProfileModal() {
 function fillProfileForm(anketa) {
     document.getElementById('profile-id').value = anketa.id || '';
     document.getElementById('profile-name').value = anketa.name || '';
+    document.getElementById('profile-telegram').value = anketa.Telegram || '';
     document.getElementById('profile-age').value = anketa.age || '';
     document.getElementById('profile-gender').value = anketa.gender || '';
     document.getElementById('profile-city').value = anketa.city || '';
@@ -642,6 +643,7 @@ async function updateAnketa(data) {
 
 // Обработка отправки формы профиля
 async function handleProfileSubmit(e) {
+    
     e.preventDefault();
     e.stopPropagation();
     
@@ -650,7 +652,6 @@ async function handleProfileSubmit(e) {
     // Собираем данные формы
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
     console.log('Данные формы:', data);
     
     // Валидация

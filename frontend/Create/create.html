@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Создать вакансию - Job Finder Pro</title>
+    <title>Создать объявление - Job Finder Pro</title>
     <link rel="stylesheet" href="create.css">
 </head>
 <body>
     <header>
         <div class="logo">Fsociety</div>
         <nav>
-            <button onclick="location.href='../main/main.html'">Хочу работать</button>
-            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти работника</button>
-            <button onclick="location.href='../create/create.html'">Создать вакансию</button>
-            <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
+            <button onclick="location.href='../main/main.html'">Приложения</button>
+            <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
+            
             <button onclick="logout()">Выход</button>
             <span id="welcome-message" style="display: none;"></span>
         </nav>
     </header>
 
     <main>
-        <!-- Контейнер создания вакансии -->
+        <!-- Контейнер создания объявления -->
         <div id="create-job-container" class="form-container">
             <form id="create-job-form">
-                <h2>Создать вакансию</h2>
-                <input type="text" name="title" placeholder="Название вакансии" required>
+                <h2>Создать объявление</h2>
+                <input type="text" name="title" placeholder="Название объявления" required>
                 <input type="text" name="company" placeholder="Компания" required>
                 <input type="text" name="description" placeholder="Описание" required>
                 <input type="text" name="salary" placeholder="Зарплата" required>
@@ -39,8 +40,8 @@
                     <option value="remote">Удалённая работа</option>
                     <option value="internship">Стажировка</option>
                 </select>
-                <button type="submit">Опубликовать вакансию</button>
-                <p class="form-message">Заполните все поля для создания вакансии</p>
+                <button type="submit">Опубликовать объявление</button>
+                <p class="form-message">Заполните все поля для создания объявления</p>
             </form>
         </div>
     </main>

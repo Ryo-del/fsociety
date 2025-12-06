@@ -95,7 +95,7 @@ main {
     flex-grow: 2;
 }
 
-/* Стили для списка вакансий */
+/* Стили для списка объявления */
 #jobs-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

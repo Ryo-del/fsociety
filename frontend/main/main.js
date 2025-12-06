@@ -1,6 +1,6 @@
 // Global constants
 const API_BASE_URL = window.location.origin;
-let allJobs = []; // Хранит все загруженные вакансии для фильтрации
+let allJobs = []; // Хранит все загруженные объявления для фильтрации
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (УВЕДОМЛЕНИЯ, АВТОРИЗАЦИЯ, ВЫХОД) ---
 
@@ -117,7 +117,7 @@ function toggleDescription(button) {
     }
 }
 
-// Функция для обработки отклика на вакансию
+// Функция для обработки отклика на объявления
 function respondToJob(jobTitle, telegramUsername) {
     // Формируем ссылку на Telegram
     let telegramLink;
@@ -129,7 +129,7 @@ function respondToJob(jobTitle, telegramUsername) {
     telegramLink = `https://t.me/${cleanUsername}`;
     
     // Показываем уведомление
-    notify(`Вы откликаетесь на вакансию "${jobTitle}". Открываю Telegram...`, 'success');
+    notify(`Вы откликаетесь на объявление "${jobTitle}". Открываю Telegram...`, 'success');
     
     // Открываем ссылку в новой вкладке
     setTimeout(() => {
@@ -139,7 +139,7 @@ function respondToJob(jobTitle, telegramUsername) {
     return false;
 }
 
-// Создание HTML-карточки вакансии
+// Создание HTML-карточки объявления
 function createJobCard(job) {
     const jobCard = document.createElement('div');
     jobCard.className = 'job-card';
@@ -202,13 +202,12 @@ function createJobCard(job) {
     return jobCard;
 }
 
-// Обновление счетчика вакансий
+// Обновление счетчика объявления
 function updateJobCount(count) {
     const container = document.getElementById('jobs-list-container');
-    showMessage(container, `Найдено ${count} вакансий`, false);
+    showMessage(container, `Найдено ${count} объявлений`, false);
 }
-
-// Отрисовка списка вакансий
+объявления
 function renderJobs(jobs) {
     const jobsList = document.getElementById('jobs-list');
     if (!jobsList) return;
@@ -216,7 +215,7 @@ function renderJobs(jobs) {
     jobsList.innerHTML = '';
     
     if (jobs.length === 0) {
-        jobsList.innerHTML = '<p class="no-jobs">Нет доступных вакансий, соответствующих фильтрам</p>';
+        jobsList.innerHTML = '<p class="no-jobs">Нет доступных объявлений, соответствующих фильтрам</p>';
         return;
     }
     
@@ -226,10 +225,10 @@ function renderJobs(jobs) {
     });
 }
 
-// Загрузка всех вакансий (URL /showjobs)
+// Загрузка всех объявлений(URL /showjobs)
 async function loadJobs() {
     const container = document.getElementById('jobs-list-container');
-    showMessage(container, 'Загрузка всех вакансий...', false);
+    showMessage(container, 'Загрузка всех объявлений...', false);
 
     try {
         const response = await fetch(`${API_BASE_URL}/showjobs`, { 
@@ -253,7 +252,7 @@ async function loadJobs() {
 
     } catch (error) {
         console.error('Error loading jobs:', error);
-        showMessage(container, 'Ошибка загрузки вакансий: ' + error.message, true);
+        showMessage(container, 'Ошибка загрузки объявлений: ' + error.message, true);
     }
 }
 
@@ -297,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // 1. Проверка авторизации
     await initPage();
     
-    // 2. Загрузка всех вакансий
+    // 2. Загрузка всех объявления
     await loadJobs();
     
     // 3. Назначение обработчиков для фильтров

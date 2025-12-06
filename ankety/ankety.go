@@ -18,6 +18,7 @@ type Ankety struct {
 	Age    string `json:"age"`
 	Job    string `json:"job"`
 	School string `json:"school"`
+	Skills string `json:"skills"`
 }
 
 var anketybase string = "ankety.json"
@@ -47,7 +48,8 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	age := r.FormValue("age")
 	job := r.FormValue("job")
 	school := r.FormValue("school")
-	if name == "" || age == "" || job == "" || school == "" || gender == "" {
+	skills := r.FormValue("skills")
+	if name == "" || age == "" || job == "" || school == "" || gender == "" || skills == "" {
 		http.Error(w, "Missing fields", http.StatusBadRequest)
 		return
 	}
@@ -83,6 +85,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Age:    age,
 		Job:    job,
 		School: school,
+		Skills: skills,
 	}
 
 	anketyList = append(anketyList, ankety)
@@ -119,4 +122,86 @@ func ShowAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseData)
+}
+
+// Обработчик для обновления анкеты
+func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut && r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Получаем данные из формы
+	id := r.FormValue("id")
+	name := r.FormValue("name")
+	gender := r.FormValue("gender")
+	age := r.FormValue("age")
+	job := r.FormValue("job")
+	school := r.FormValue("school")
+	skills := r.FormValue("skills")
+
+	if id == "" || name == "" || gender == "" || age == "" || job == "" || school == "" || skills == "" {
+		http.Error(w, "Missing fields", http.StatusBadRequest)
+		return
+	}
+
+	// Проверяем авторизацию
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		return
+	}
+	userID, _, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Ищем анкету для обновления
+	found := false
+	for i, a := range anketyList {
+		if a.Id == id && a.UserId == userID {
+			// Обновляем данные анкеты
+			anketyList[i].Name = name
+			anketyList[i].Gender = gender
+			anketyList[i].Age = age
+			anketyList[i].Job = job
+			anketyList[i].School = school
+			anketyList[i].Skills = skills
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		http.Error(w, "Ankety not found or access denied", http.StatusNotFound)
+		return
+	}
+
+	// Сохраняем обновленные данные
+	updatedData, err := json.MarshalIndent(anketyList, "", "  ")
+	if err != nil {
+		http.Error(w, "Error encoding data", http.StatusInternalServerError)
+		return
+	}
+
+	err = os.WriteFile(anketybase, updatedData, 0644)
+	if err != nil {
+		http.Error(w, "Error writing data file", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Profile updated successfully"))
+}
+
+func UploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
+	// TODO
 }

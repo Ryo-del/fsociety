@@ -3,269 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Style Profile</title>
-    <link rel="stylesheet" href="Profile.css">
+    <title>Профиль - Fsociety</title>
+    <link rel="stylesheet" href="../main/main.css">
+    <!-- Подключаем Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Подключаем стили из myjob.css для модального окна -->
+    <link rel="stylesheet" href="../myjob/myjob.css">
+    <style>
+        /* Специфичные стили для профиля */
+        .profile-avatar {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid #667eea;
+            margin: 0 auto 25px;
+            display: block;
+            object-fit: cover;
+        }
+        
+        .profile-name {
+            color: #4b6cb7;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .profile-bio {
+            color: #6c757d;
+            font-size: 1.1em;
+            line-height: 1.6;
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .profile-info-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #6c757d;
+        }
+        
+        .profile-card {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        /* Стили для формы в модальном окне профиля */
+        #profile-edit-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        #profile-edit-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        #profile-edit-form input,
+        #profile-edit-form select,
+        #profile-edit-form textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5eb;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        #profile-edit-form input:focus,
+        #profile-edit-form select:focus,
+        #profile-edit-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        #profile-edit-form select {
+            cursor: pointer;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .profile-modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .profile-modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+        }
+        
+        .profile-modal-buttons button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .profile-modal-buttons button.secondary {
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e1e5eb;
+        }
+        
+        .profile-modal-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <nav class="navbar">
-                <div class="nav-left">
-                    <i class="fab fa-github nav-icon"></i>
-                    <div class="nav-links">
-                        <a href="#" class="nav-link">Обзор</a>
-                        <a href="#" class="nav-link active">Реpositories <span class="repo-count">12</span></a>
-                        <a href="#" class="nav-link">Проекты</a>
-                        <a href="#" class="nav-link">Пакеты</a>
-                    </div>
-                </div>
-                <div class="nav-right">
-                    <i class="fas fa-bell"></i>
-                    <div class="user-dropdown">
-                        <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="User" class="avatar">
-                        <i class="fas fa-caret-down"></i>
-                    </div>
-                </div>
-            </nav>
-        </header>
+    <header>
+        <div class="logo">Fsociety</div>
+        <nav>
+            <button onclick="location.href='../main/main.html'">Предложения</button>
+            <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
+            <button onclick="logout()">Выход</button>
+            <span id="welcome-message" style="display: none; cursor: pointer;" onclick="goToProfile()"></span>
+        </nav>
+    </header>
 
-        <div class="profile-layout">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <div class="profile-card">
-                    <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="Profile" class="profile-avatar">
-                    <h1 class="profile-name">octocat</h1>
-                    <p class="profile-username">The Octocat</p>
-                    <p class="profile-bio">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-                    
-                    <button class="btn btn-edit">
-                        <i class="fas fa-pencil-alt"></i> Редактировать профиль
-                    </button>
-                    
-                    <div class="profile-stats">
-                        <div class="stat">
-                            <i class="fas fa-users"></i>
-                            <span><strong>24</strong> подписчиков</span>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-user-friends"></i>
-                            <span><strong>56</strong> подписок</span>
-                        </div>
-                        <div class="stat">
-                            <i class="fas fa-star"></i>
-                            <span><strong>128</strong> звезд</span>
-                        </div>
-                    </div>
-                    
-                    <div class="profile-info">
-                        <div class="info-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Сан-Франциско</span>
-                        </div>
-                        <div class="info-item">
-                            <i class="fas fa-link"></i>
-                            <a href="#">https://github.blog</a>
-                        </div>
-                        <div class="info-item">
-                            <i class="fab fa-twitter"></i>
-                            <a href="#">@octocat</a>
-                        </div>
-                        <div class="info-item">
-                            <i class="far fa-building"></i>
-                            <span>@github</span>
-                        </div>
-                    </div>
-                    
-                    <div class="profile-highlights">
-                        <h3>Highlights</h3>
-                        <div class="highlight-item">
-                            <i class="fas fa-medal"></i>
-                            <span>Arctic Code Vault Contributor</span>
-                        </div>
-                    </div>
+    <main>
+        <div class="form-container" style="max-width: 600px; margin: 40px auto;">
+            <h2>Мой профиль</h2>
+            
+            <div class="profile-card" style="text-align: center; padding: 40px 20px;">
+                <!-- Фото профиля -->
+                <img src="https://avatars.githubusercontent.com/u/583231?v=4" 
+                     alt="Фото профиля" 
+                     class="profile-avatar">
+                
+                <!-- Ник пользователя -->
+                <h1 class="profile-name" id="profile-name-display">
+                    octocat
+                </h1>
+                
+                <!-- Описание/биография -->
+                <div class="profile-bio" id="profile-bio-display">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
                 </div>
                 
-                <div class="organizations">
-                    <h3>Организации</h3>
-                    <div class="org-list">
-                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="Org" class="org-avatar">
-                        <img src="https://avatars.githubusercontent.com/u/9919?s=200&v=4" alt="Org" class="org-avatar">
-                    </div>
+                <!-- Дополнительная информация -->
+                <div id="profile-info-display" style="margin-top: 20px;"></div>
+
+                <!-- Кнопка редактирования -->
+                <div style="margin-top: 30px; display: flex; justify-content: center;">
+                    <button class="toggle-btn" id="profile-edit-button" 
+                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1em; width: auto; min-width: 200px;">
+                        <i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль
+                    </button>
                 </div>
-            </aside>
+            </div>
+        </div>
+    </main>
 
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Navigation Tabs -->
-                <nav class="content-tabs">
-                    <a href="#" class="tab active">
-                        <i class="far fa-bookmark"></i> Overview
-                    </a>
-                    <a href="#" class="tab">
-                        <i class="far fa-file-code"></i> Repositories <span class="tab-badge">12</span>
-                    </a>
-                    <a href="#" class="tab">
-                        <i class="far fa-chart-bar"></i> Projects
-                    </a>
-                    <a href="#" class="tab">
-                        <i class="fas fa-cube"></i> Packages
-                    </a>
-                </nav>
-
-                <!-- Pinned Repositories -->
-                <section class="pinned-repos">
-                    <h2><i class="fas fa-thumbtack"></i> Pinned repositories</h2>
-                    <div class="repo-grid">
-                        <div class="repo-card">
-                            <div class="repo-header">
-                                <i class="far fa-bookmark"></i>
-                                <a href="#" class="repo-name">octocat / Hello-World</a>
-                                <span class="repo-badge public">Public</span>
-                            </div>
-                            <p class="repo-description">My first repository on GitHub!</p>
-                            <div class="repo-footer">
-                                <span class="repo-lang">
-                                    <span class="lang-color"></span> JavaScript
-                                </span>
-                                <span class="repo-stars">
-                                    <i class="far fa-star"></i> 1,234
-                                </span>
-                                <span class="repo-forks">
-                                    <i class="fas fa-code-branch"></i> 567
-                                </span>
-                            </div>
+    <!-- Модальное окно для редактирования профиля -->
+    <div id="profile-edit-modal" class="edit-modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeProfileModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="profile-modal-title">Редактировать профиль</h2>
+                <button class="modal-close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="profile-edit-form">
+                    <input type="hidden" id="profile-id" name="id">
+                    
+                    <div class="form-group">
+                        <label for="profile-name">Имя</label>
+                        <input type="text" id="profile-name" name="name" required 
+                               placeholder="Введите ваше имя">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="profile-age">Возраст</label>
+                            <input type="number" id="profile-age" name="age" required 
+                                   min="16" max="100" placeholder="25">
                         </div>
                         
-                        <div class="repo-card">
-                            <div class="repo-header">
-                                <i class="far fa-bookmark"></i>
-                                <a href="#" class="repo-name">octocat / Spoon-Knife</a>
-                                <span class="repo-badge public">Public</span>
-                            </div>
-                            <p class="repo-description">This repo is for demonstration purposes only.</p>
-                            <div class="repo-footer">
-                                <span class="repo-lang">
-                                    <span class="lang-color" style="background: #f1e05a"></span> JavaScript
-                                </span>
-                                <span class="repo-stars">
-                                    <i class="far fa-star"></i> 892
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <div class="repo-card">
-                            <div class="repo-header">
-                                <i class="far fa-bookmark"></i>
-                                <a href="#" class="repo-name">octocat / git-consortium</a>
-                                <span class="repo-badge public">Public</span>
-                            </div>
-                            <p class="repo-description">This repo is for demonstration purposes only.</p>
-                            <div class="repo-footer">
-                                <span class="repo-lang">
-                                    <span class="lang-color" style="background: #3572A5"></span> Python
-                                </span>
-                                <span class="repo-stars">
-                                    <i class="far fa-star"></i> 456
-                                </span>
-                            </div>
+                        <div class="form-group">
+                            <label for="profile-gender">Пол</label>
+                            <select id="profile-gender" name="gender" required>
+                                <option value="">Выберите пол</option>
+                                <option value="мужской">Мужской</option>
+                                <option value="женский">Женский</option>
+                                <option value="другое">Другое</option>
+                            </select>
                         </div>
                     </div>
-                </section>
-
-                <!-- Activity Section -->
-                <section class="activity-section">
-                    <h2>Recent activity</h2>
-                    <div class="activity-list">
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-code-commit"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>
-                                    <strong>Pushed 1 commit</strong> to 
-                                    <a href="#">octocat/Hello-World</a>
-                                </p>
-                                <small class="activity-time">2 hours ago</small>
-                            </div>
-                        </div>
-                        
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="fas fa-code-branch"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>
-                                    <strong>Created branch</strong> 
-                                    <a href="#">feature/new-design</a> in 
-                                    <a href="#">octocat/Spoon-Knife</a>
-                                </p>
-                                <small class="activity-time">Yesterday</small>
-                            </div>
-                        </div>
-                        
-                        <div class="activity-item">
-                            <div class="activity-icon">
-                                <i class="far fa-star"></i>
-                            </div>
-                            <div class="activity-content">
-                                <p>
-                                    <strong>Starred</strong> 
-                                    <a href="#">vercel/next.js</a>
-                                </p>
-                                <small class="activity-time">2 days ago</small>
-                            </div>
-                        </div>
+                    
+                    <div class="form-group">
+                        <label for="profile-job">Профессия/Должность</label>
+                        <input type="text" id="profile-job" name="job" required 
+                               placeholder="Например: Разработчик, Дизайнер, Менеджер">
                     </div>
-                </section>
-
-                <!-- Contributions Graph -->
-                <section class="contributions-section">
-                    <h2>Contributions</h2>
-                    <div class="contributions-graph">
-                        <div class="graph-header">
-                            <span>Last year</span>
-                            <span class="total-contributions">1,234 contributions</span>
-                        </div>
-                        <div class="graph-grid">
-                            <!-- График будет создан через CSS -->
-                            <div class="graph-months">
-                                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
-                                <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
-                                <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
-                            </div>
-                            <div class="graph-days">
-                                <div class="day-column">
-                                    <div class="day-cell level-0"></div>
-                                    <div class="day-cell level-1"></div>
-                                    <div class="day-cell level-2"></div>
-                                    <div class="day-cell level-3"></div>
-                                    <div class="day-cell level-4"></div>
-                                    <div class="day-cell level-2"></div>
-                                    <div class="day-cell level-1"></div>
-                                </div>
-                                <!-- Повторить для других недель -->
-                            </div>
-                        </div>
-                        <div class="graph-legend">
-                            <span>Меньше</span>
-                            <div class="legend-cells">
-                                <div class="legend-cell level-0"></div>
-                                <div class="legend-cell level-1"></div>
-                                <div class="legend-cell level-2"></div>
-                                <div class="legend-cell level-3"></div>
-                                <div class="legend-cell level-4"></div>
-                            </div>
-                            <span>Больше</span>
-                        </div>
+                    
+                    <div class="form-group">
+                        <label for="profile-school">Образование</label>
+                        <input type="text" id="profile-school" name="school" required 
+                               placeholder="Например: МГУ, КубГУ, Bootcamp">
                     </div>
-                </section>
-            </main>
+                    
+                    <div class="form-group">
+                        <label for="profile-description">О себе (дополнительно)</label>
+                        <textarea id="profile-description" name="description" 
+                                  placeholder="Расскажите немного о себе, своих интересах, опыте..."
+                                  rows="4"></textarea>
+                    </div>
+                    
+                    <div class="profile-modal-buttons">
+                        <button type="submit" class="primary" id="profile-save-button">
+                            <i class="fas fa-save" style="margin-right: 8px;"></i> Сохранить
+                        </button>
+                        <button type="button" class="secondary" onclick="closeProfileModal()">
+                            <i class="fas fa-times" style="margin-right: 8px;"></i> Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // Глобальные переменные
+        let currentAnketa = null;
+        
+        // Простые функции для навигации
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userName');
+                window.location.href = '../index.html';
+            }
+        }
+        
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+        
+        // Показываем приветственное сообщение если есть пользователь
+        window.onload = function() {
+            const welcomeMessage = document.getElementById('welcome-message');
+            const userName = localStorage.getItem('userName') || 'octocat';
+            if (userName) {
+                welcomeMessage.textContent = `👤 ${userName}`;
+                welcomeMessage.style.display = 'inline';
+            }
+            
+            // Загружаем данные анкеты пользователя
+            loadUserProfile();
+            
+            // Назначаем обработчик на кнопку редактирования
+            document.getElementById('profile-edit-button').onclick = openProfileModal;
+            
+            // Назначаем обработчик формы
+            document.getElementById('profile-edit-form').onsubmit = handleProfileSubmit;
+        };
+        
+        // Функция для получения ID текущего пользователя
+        function getCurrentUserId() {
+            return localStorage.getItem('userId') || '';
+        }
+        
+        // Функция для загрузки профиля пользователя
+        async function loadUserProfile() {
+            try {
+                console.log('Загрузка профиля...');
+                
+                try {
+                    const response = await fetch('/api/show-ankety', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        const realData = await response.json();
+                        processAnketyData(realData);
+                        return;
+                    }
+                } catch (fetchError) {
+                    console.log('Используем мок-данные:', fetchError.message);
+                }
+                
+                // Если запрос не удался, используем мок-данные
+                const mockData = [
+                    {
+                        "id": "1",
+                        "user_id": getCurrentUserId() || "test_user_id",
+                        "name": "Иван Иванов",
+                        "gender": "мужской",
+                        "age": "28",
+                        "job": "Разработчик",
+                        "school": "МГУ"
+                    }
+                ];
+                
+                processAnketyData(mockData);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки профиля:', error);
+                showMessage('Не удалось загрузить профиль. Используются демо-данные.', 'info');
+                
+                // Показываем кнопку создания анкеты
+                const editButton = document.getElementById('profile-edit-button');
+                editButton.innerHTML = '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
+            }
+        }
+        
+        // Обработка данных анкеты
+        function processAnketyData(anketyData) {
+            const currentUserId = getCurrentUserId();
+            currentAnketa = anketyData.find(anketa => 
+                anketa.user_id === currentUserId || 
+                (currentUserId === '' && anketa.user_id === "test_user_id")
+            );
+            
+            if (currentAnketa) {
+                updateProfileDisplay(currentAnketa);
+                
+                const editButton = document.getElementById('profile-edit-button');
+                editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
+            } else {
+                const editButton = document.getElementById('profile-edit-button');
+                editButton.innerHTML = '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
+            }
+        }
+        
+        // Обновление отображения профиля
+        function updateProfileDisplay(anketa) {
+            // Обновляем имя
+            document.getElementById('profile-name-display').textContent = anketa.name;
+            
+            // Обновляем основную информацию
+            document.getElementById('profile-bio-display').innerHTML = `
+                <p><strong>Возраст:</strong> ${anketa.age}</p>
+                <p><strong>Пол:</strong> ${anketa.gender}</p>
+                <p><strong>Профессия:</strong> ${anketa.job}</p>
+                <p><strong>Образование:</strong> ${anketa.school}</p>
+            `;
+            
+            // Сохраняем в localStorage для отображения в header
+            localStorage.setItem('userName', anketa.name);
+            const welcomeMessage = document.getElementById('welcome-message');
+            welcomeMessage.textContent = `👤 ${anketa.name}`;
+            welcomeMessage.style.display = 'inline';
+        }
+        
+        // Открытие модального окна
+        function openProfileModal() {
+            const modal = document.getElementById('profile-edit-modal');
+            const modalTitle = document.getElementById('profile-modal-title');
+            
+            if (currentAnketa) {
+                // Режим редактирования
+                modalTitle.textContent = 'Редактировать профиль';
+                document.getElementById('profile-save-button').innerHTML = 
+                    '<i class="fas fa-save" style="margin-right: 8px;"></i> Сохранить изменения';
+                
+                // Заполняем форму текущими данными
+                document.getElementById('profile-id').value = currentAnketa.id;
+                document.getElementById('profile-name').value = currentAnketa.name;
+                document.getElementById('profile-age').value = currentAnketa.age;
+                document.getElementById('profile-gender').value = currentAnketa.gender;
+                document.getElementById('profile-job').value = currentAnketa.job;
+                document.getElementById('profile-school').value = currentAnketa.school;
+                document.getElementById('profile-description').value = currentAnketa.description || '';
+            } else {
+                // Режим создания
+                modalTitle.textContent = 'Создать анкету';
+                document.getElementById('profile-save-button').innerHTML = 
+                    '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
+                
+                // Очищаем форму
+                document.getElementById('profile-edit-form').reset();
+                document.getElementById('profile-id').value = '';
+            }
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Закрытие модального окна
+        function closeProfileModal() {
+            const modal = document.getElementById('profile-edit-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Обработка отправки формы
+        async function handleProfileSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                id: formData.get('id'),
+                name: formData.get('name'),
+                age: formData.get('age'),
+                gender: formData.get('gender'),
+                job: formData.get('job'),
+                school: formData.get('school'),
+                description: formData.get('description')
+            };
+            
+            try {
+                if (data.id) {
+                    // Режим обновления
+                    await updateAnketa(data);
+                } else {
+                    // Режим создания
+                    await createNewAnketa(data);
+                }
+                
+                closeProfileModal();
+                loadUserProfile(); // Перезагружаем профиль
+            } catch (error) {
+                console.error('Ошибка сохранения профиля:', error);
+                showMessage('Не удалось сохранить профиль. Пожалуйста, попробуйте позже.', 'error');
+            }
+        }
+        
+        // Функция для обновления анкеты
+        async function updateAnketa(data) {
+            const response = await fetch('/api/update-ankety', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(data),
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                showMessage('Профиль успешно обновлен!', 'success');
+                return true;
+            } else {
+                throw new Error(`Ошибка: ${response.status}`);
+            }
+        }
+        
+        // Функция для создания новой анкеты
+        async function createNewAnketa(data) {
+            // Убираем поле id для создания новой анкеты
+            const createData = {...data};
+            delete createData.id;
+            
+            const response = await fetch('/api/create-ankety', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(createData),
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                showMessage('Анкета успешно создана!', 'success');
+                return true;
+            } else {
+                throw new Error(`Ошибка: ${response.status}`);
+            }
+        }
+        
+        // Функция для показа сообщений
+        function showMessage(message, type = 'info') {
+            // Удаляем предыдущие сообщения
+            const existingMessage = document.querySelector('.form-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            
+            // Создаем новое сообщение
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `form-message ${type}`;
+            messageDiv.textContent = message;
+            
+            // Вставляем сообщение перед профилем
+            const profileCard = document.querySelector('.profile-card');
+            profileCard.parentNode.insertBefore(messageDiv, profileCard);
+            
+            // Автоматически скрываем сообщение через 5 секунд
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+        
+        // Закрытие модального окна по клику вне его
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('profile-edit-modal');
+            const modalContent = document.querySelector('.modal-content');
+            
+            if (modal.style.display === 'flex' && 
+                !modalContent.contains(event.target) && 
+                !event.target.closest('#profile-edit-button')) {
+                closeProfileModal();
+            }
+        });
+        
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeProfileModal();
+            }
+        });
+    </script>
 </body>
 </html>

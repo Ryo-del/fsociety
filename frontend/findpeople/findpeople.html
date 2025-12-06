@@ -172,7 +172,7 @@
                             <p>Опытный Frontend разработчик с экспертизой в React ecosystem. Имею опыт работы в продуктовых компаниях и стартапах. Участвовал в создании масштабируемых SPA приложений с нуля.</p>
                         </div>
                         <div class="person-actions">
-                            <button class="btn-secondary" onclick="sendInvite(2)">Пригласить на вакансию</button>
+                            <button class="btn-secondary" onclick="sendInvite(2)">Пригласить на встречу</button>
                         </div>
                     </div>
                     
@@ -232,7 +232,7 @@
                         </div>
                         
                         <div class="person-actions">
-                            <button class="btn-secondary" onclick="sendInvite(2)">Пригласить на вакансию</button>
+                            <button class="btn-secondary" onclick="sendInvite(2)">Пригласить на встречу</button>
                         </div>
                     </div>
                     
@@ -292,7 +292,7 @@
                         </div>
                         
                         <div class="person-actions">
-                            <button class="btn-secondary" onclick="sendInvite(3)">Пригласить на вакансию</button>
+                            <button class="btn-secondary" onclick="sendInvite(3)">Пригласить на встречу</button>
                         </div>
                     </div>
                 </div>
@@ -362,11 +362,11 @@
             const message = document.getElementById('invite-message').value;
             
             if (!vacancy) {
-                alert('Выберите вакансию!');
+                alert('Выберите объявление!');
                 return;
             }
             
-            alert(`Приглашение отправлено кандидату #${currentCandidateId} на вакансию #${vacancy}`);
+            alert(`Приглашение отправлено кандидату #${currentCandidateId} на объя #${vacancy}`);
             closeModal();
         }
         

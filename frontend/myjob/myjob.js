@@ -31,13 +31,13 @@ function notify(text, type = "info") {
     setTimeout(() => box.remove(), 3500);
 }
 
-// Загрузка вакансий
+// Загрузка объявлений
 async function loadMyJobs() {
     // Находим элемент сообщения, который находится вне контейнера списка
     const messageElement = document.querySelector('.form-message');
     
     if (messageElement) {
-        messageElement.textContent = 'Загрузка ваших вакансий...';
+        messageElement.textContent = 'Загрузка ваших объявлений...';
         messageElement.className = 'form-message'; // Сброс классов
     }
 
@@ -57,7 +57,7 @@ async function loadMyJobs() {
 
         let jobs = [];
 
-        // Если сервер вернул пустую строку → считаем, что вакансий нет
+        // Если сервер вернул пустую строку → считаем, что объявлений нет
         if (!responseText.trim()) {
             console.warn("Empty response from backend — treating as empty job list");
         } else {
@@ -85,7 +85,7 @@ async function loadMyJobs() {
     }
 }
 
-// Рендер вакансий
+// Рендер объявлений
 function renderMyJobs(jobs) {
     const list = document.getElementById("my-jobs-list");
     // Находим элемент сообщения
@@ -94,26 +94,26 @@ function renderMyJobs(jobs) {
     // Полностью очищаем контейнер списка
     list.innerHTML = "";
 
-    // Если вакансий нет → показываем пустой экран
+    // Если объялений нет → показываем пустой экран
     if (!jobs || jobs.length === 0) {
         if (msg) {
-            msg.textContent = "Ваших вакансий нет";
+            msg.textContent = "Ваших объявлений нет";
             msg.className = "form-message info";
         }
 
         list.innerHTML = `
             <div class="no-jobs">
-                <h3>Ваших вакансий нет</h3>
-                <p>Создайте свою первую вакансию и начните поиск кандидатов</p>
-                <button class="primary" onclick="location.href='../create/create.html'">Создать вакансию</button>
+                <h3>Ваших объявлений нет</h3>
+                <p>Создайте своё первое объявление и начните поиск кандидатов</p>
+                <button class="primary" onclick="location.href='../create/create.html'">Создать объявление</button>
             </div>
         `;
         return;
     }
 
-    // Если вакансии есть — выводим их
+    // Если объявления есть — выводим их
     if (msg) {
-        msg.textContent = `У вас ${jobs.length} вакансий`;
+        msg.textContent = `У вас ${jobs.length} объявлений`;
         msg.className = "form-message success";
     }
 
@@ -124,7 +124,7 @@ function renderMyJobs(jobs) {
 }
 
 
-// Карточка вакансии
+// Карточка объявлений
 function jobCard(job) {
     const div = document.createElement("div");
     div.className = "job-card";
@@ -159,19 +159,19 @@ function jobCard(job) {
 async function editJob(id) {
     try {
         const res = await fetch(`${API_BASE_URL}/job/${id}`, { credentials: "include" });
-        if (!res.ok) return notify("Ошибка загрузки вакансии", "error");
+        if (!res.ok) return notify("Ошибка загрузки объявления", "error");
 
         const job = await res.json();
         openEditModal(job);
 
     } catch {
-        notify("Ошибка загрузки вакансии", "error");
+        notify("Ошибка загрузки объявлений", "error");
     }
 }
 
 function openEditModal(jobData) {
     const modal = document.getElementById('edit-modal');
-    // Заполнение формы данными вакансии
+    // Заполнение формы данными объявления
     document.getElementById('edit-id').value = jobData.id || jobData.Id;
     document.getElementById('edit-title').value = jobData.title;
     document.getElementById('edit-company').value = jobData.company;
@@ -189,7 +189,7 @@ function closeEditModal() {
 
 
 async function deleteJob(id) {
-    if (!confirm("Удалить вакансию?")) return;
+    if (!confirm("Удалить объявление?")) return;
 
     const res = await fetch(`${API_BASE_URL}/job/${id}`, {
         method: "DELETE",
@@ -197,7 +197,7 @@ async function deleteJob(id) {
     });
 
     if (res.status === 204) {
-        notify("Вакансия удалена", "success");
+        notify("Объявление удалено", "success");
         loadMyJobs();
     } else {
         // Проверяем, есть ли текст ошибки в ответе
@@ -238,11 +238,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
 
                 if (response.ok) {
-                    notify('Вакансия успешно обновлена', 'success');
+                    notify('Объявление успешно обновлено', 'success');
                     closeEditModal();
                     loadMyJobs(); // Перезагрузить список
                 } else if (response.status === 403) {
-                     notify('Ошибка: Вы не можете редактировать чужую вакансию', 'error');
+                     notify('Ошибка: Вы не можете редактировать чужое объявление', 'error');
                 } else if (response.status === 401) {
                      window.location.href = '../auth/login.html';
                 } else {

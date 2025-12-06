@@ -22,9 +22,10 @@ func main() {
 	mux.HandleFunc("/checkauth", auth.CheckAuthHandler)
 	mux.HandleFunc("/logout", auth.LogOutHandler)
 
-	mux.HandleFunc("/createankety", ankety.CreateHandler)
-	//mux.HandleFunc("/uploadphoto", ankety.)
-	mux.HandleFunc("/showankety", ankety.ShowAnketyHandler)
+	mux.HandleFunc("POST /api/create-ankety", ankety.CreateHandler)
+	mux.HandleFunc("PUT /api/update-ankety", ankety.UpdateAnketyHandler)
+	mux.HandleFunc("GET /api/show-ankety", ankety.ShowAnketyHandler)
+	mux.HandleFunc("POST /api/uploaphoto-ankety", ankety.UploadPhotoHandler)
 	fs := http.FileServer(http.Dir("./frontend"))
 	mux.Handle("/", fs)
 
@@ -32,5 +33,5 @@ func main() {
 	handler := auth.CORSMiddleware(mux)
 
 	fmt.Println("Server starting on :8080\nhttp://localhost:8080")
-	http.ListenAndServe(":8080", handler) // Используем обернутый handler
+	http.ListenAndServe(":8080", handler)
 }

@@ -11,9 +11,9 @@ import (
 )
 
 type Job struct {
-	// JobId - уникальный ID вакансии
+	// JobId - уникальный ID объявления
 	Id string `json:"id"`
-	// UserID - ID пользователя, создавшего вакансию (берется из куки)
+	// UserID - ID пользователя, создавшего объявления (берется из куки)
 	UserID      string `json:"user_id"`
 	Title       string `json:"title"`
 	Company     string `json:"company"`
@@ -140,7 +140,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	currentUserID := userIDCookie.Value
 
-	// 2. Загружаем существующие вакансии
+	// 2. Загружаем существующие объявления
 	jobs, err := LoadJobs()
 	if err != nil {
 		http.Error(w, "Error loading jobs: "+err.Error(), http.StatusInternalServerError)
@@ -159,7 +159,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 4. Создаем новую вакансию
+	// 4. Создаем новую объявления
 	newJob := Job{
 		Id:          uuid.New().String(), // Генерируем новый UUID
 		UserID:      currentUserID,       // Привязываем к текущему пользователю
@@ -175,7 +175,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Telegram:    r.FormValue("telegram"),
 	}
 
-	// 5. Добавляем новую вакансию в список
+	// 5. Добавляем новую объявления в список
 	jobs = append(jobs, newJob)
 
 	// 6. Сохраняем обновленный список
@@ -197,7 +197,7 @@ func OpenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ИСПРАВЛЕНИЕ: Получаем ID вакансии из URL (например, /job/123-abc)
+	// ИСПРАВЛЕНИЕ: Получаем ID объявления из URL (например, /job/123-abc)
 	jobID := strings.TrimPrefix(r.URL.Path, "/job/")
 	if jobID == "" || jobID == "job" {
 		http.Error(w, "Missing job ID in URL path", http.StatusBadRequest)
@@ -210,7 +210,7 @@ func OpenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ищем вакансию по JobID
+	// Ищем объявления по JobID
 	var foundJob *Job
 	for _, job := range jobs {
 		if jobID == job.Id {
@@ -244,7 +244,7 @@ func GetAllHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	// Просто возвращаем весь список вакансий
+	// Просто возвращаем весь список объявления
 	json.NewEncoder(w).Encode(jobs)
 }
 
@@ -328,7 +328,7 @@ func MyjobHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ИСПРАВЛЕНИЕ: Ищем ВСЕ вакансии, созданные текущим пользователем
+	// ИСПРАВЛЕНИЕ: Ищем ВСЕ объявления, созданные текущим пользователем
 	var userJobs []Job
 	for _, job := range jobs {
 		if currentUserID == job.UserID { // Ищем по UserID

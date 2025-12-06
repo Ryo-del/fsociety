@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вакансии - Fsociety</title>
+    <title>Объявления - Fsociety</title>
     <link rel="stylesheet" href="main.css">
 
 </head>
@@ -11,20 +11,20 @@
     <header>
         <div class="logo">Fsociety</div>
         <nav>
-            <button onclick="location.href='../main/main.html'">Хочу работать</button>
-            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти работника</button>
-            <button onclick="location.href='../create/create.html'">Создать вакансию</button>
-            <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
-            
+            <button onclick="location.href='../main/main.html'">Предложения</button>
+            <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
+
             <button onclick="logout()">Выход</button>
             <span id="welcome-message" style="display: none; cursor: pointer;" onclick="goToProfile()"></span>
         </nav>
     </header>
 
     <main>
-        <!-- Контейнер списка всех вакансий -->
+        <!-- Контейнер списка всех объявления -->
         <div id="jobs-list-container" class="form-container">
-            <h2>Вакансии</h2>
+            <h2>Объявления</h2>
             <div class="filters">
                 <input type="text" id="search-input" placeholder="Поиск по названию или компании...">
                 <select id="job-type-filter">
@@ -45,7 +45,7 @@
             <div id="jobs-list">
                 <!-- Вакансии будут загружаться динамически из JavaScript -->
             </div>
-            <p class="form-message info">Загрузка вакансий...</p>
+            <p class="form-message info">Загрузка объявлений...</p>
         </div>
     </main>
 

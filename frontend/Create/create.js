@@ -37,10 +37,10 @@ async function initPage() {
     }
 }
 
-// 2. ЛОГИКА СОЗДАНИЯ ВАКАНСИИ
+// 2. ЛОГИКА СОЗДАНИЯ ОБЪЯВЛЕНИЙ
 // -----------------------------------------------------------
 
-// Функция создания вакансии
+// Функция создания объявления
 async function createJob(jobData) {
     // Используем /createjob, как определено в main.go
     const CREATE_URL = `${API_BASE_URL}/createjob`; 
@@ -70,7 +70,7 @@ async function createJob(jobData) {
             const createdJob = await response.json();
             return { success: true, job: createdJob };
         } else if (response.status === 409) {
-            return { success: false, error: 'Вы уже создали вакансию. Удалите существующую, чтобы создать новую.' };
+            return { success: false, error: 'Вы уже создали объявление. Удалите существующую, чтобы создать новую.' };
         } else {
             const errorText = await response.text();
             // Используем response.statusText как запасной вариант, если нет тела ошибки
@@ -136,22 +136,22 @@ async function handleCreateJobSubmit(e) {
     }
     
     // Показываем загрузку
-    messageElement.textContent = 'Создание вакансии...';
+    messageElement.textContent = 'Создание объявления...';
     messageElement.className = 'form-message info';
     
     // Отправляем запрос
     const result = await createJob(jobData);
     
     if (result.success) {
-        messageElement.textContent = 'Вакансия успешно создана!';
+        messageElement.textContent = 'Объявление успешно создано!';
         messageElement.className = 'form-message success';
         
         // Очищаем форму
         form.reset();
         
-        // Предлагаем перейти к просмотру вакансий
+        // Предлагаем перейти к просмотру объявлений
         setTimeout(() => {
-            if (confirm('Вакансия создана! Хотите перейти к списку ваших вакансий?')) {
+            if (confirm('Объявление создано! Хотите перейти к списку ваших объявлений?')) {
                 window.location.href = '../myjob/myjob.html';
             }
         }, 1000);

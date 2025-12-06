@@ -66,7 +66,7 @@ main {
     padding: 0 20px;
 }
 
-/* Стили для страницы моих вакансий */
+/* Стили для страницы моих объявления */
 #my-jobs-container {
     background-color: white;
     padding: 40px;
@@ -236,7 +236,7 @@ main {
 
 
 
-/* Стили для статусов вакансий */
+/* Стили для статусов объявления */
 .job-status {
     display: inline-block;
     padding: 4px 10px;

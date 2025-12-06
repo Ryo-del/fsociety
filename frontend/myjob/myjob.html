@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мои вакансии</title>
+    <title>Мои объявления</title>
     <link rel="stylesheet" href="myjob.css">
 </head>
 <body>
@@ -11,10 +11,10 @@
 <header>
     <div class="logo">Fsociety</div>
     <nav>
-        <button onclick="location.href='../main/main.html'">Хочу работать</button>
-        <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти работника</button>
-        <button onclick="location.href='../create/create.html'">Создать вакансию</button>
-        <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
+       <button onclick="location.href='../main/main.html'">Предложения</button>
+            <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
         <button id="logout-btn">Выход</button>
         <span id="welcome-message">Загрузка...</span>
     </nav>
@@ -22,7 +22,7 @@
 
 <main>
     <div id="my-jobs-container" class="form-container">
-        <h2>Мои вакансии</h2>
+        <h2>Мои объявления</h2>
         </div>
     <p id="job-list-message" class="form-message">Загрузка...</p> 
     <div id="my-jobs-list"></div>
@@ -33,7 +33,7 @@
     <div class="modal-overlay" onclick="closeEditModal()"></div>
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Редактировать вакансию</h2>
+            <h2>Редактировать объявления</h2>
             <button class="modal-close" onclick="closeEditModal()">&times;</button>
         </div>
         <div class="modal-body">

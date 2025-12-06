@@ -14,18 +14,24 @@ function notify(text, type = "info") {
 }
 
 function showMessage(container, text, isError = false) {
-    let msgElement = document.querySelector('#jobs-list-container .form-message');
-    if (!msgElement && container) {
-        // Создаем элемент сообщения, если его нет
+    let msgElement = container.querySelector('.form-message');
+    
+    if (!msgElement) {
         msgElement = document.createElement('p');
         msgElement.className = 'form-message';
-        // Вставляем после контейнера (jobs-list-container)
-        container.parentNode.insertBefore(msgElement, container.nextSibling); 
+        container.prepend(msgElement); // Добавляем в начало контейнера
     }
-    if (msgElement) {
-        msgElement.textContent = text;
-        msgElement.className = isError ? 'form-message error' : 'form-message info';
-    }
+    
+    msgElement.textContent = text;
+    msgElement.className = isError ? 'form-message error' : 'form-message info';
+    
+    // Автоматически скрываем через 5 секунд
+    setTimeout(() => {
+        if (msgElement.textContent === text) {
+            msgElement.textContent = '';
+            msgElement.className = 'form-message';
+        }
+    }, 5000);
 }
 
 // Функция для перехода в профиль
@@ -205,9 +211,20 @@ function createJobCard(job) {
 // Обновление счетчика объявления
 function updateJobCount(count) {
     const container = document.getElementById('jobs-list-container');
-    showMessage(container, `Найдено ${count} объявлений`, false);
+    if (container) {
+        // Убираем предыдущее сообщение
+        const prevMsg = container.querySelector('.form-message');
+        if (prevMsg) {
+            prevMsg.textContent = '';
+        }
+        
+        // Можно показать уведомление сверху
+        if (count === 0) {
+            showMessage(container, 'Нет объявлений по вашему запросу', false);
+        }
+    }
 }
-объявления
+
 function renderJobs(jobs) {
     const jobsList = document.getElementById('jobs-list');
     if (!jobsList) return;

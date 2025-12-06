@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -25,7 +26,12 @@ func main() {
 	mux.HandleFunc("POST /api/create-ankety", ankety.CreateHandler)
 	mux.HandleFunc("PUT /api/update-ankety", ankety.UpdateAnketyHandler)
 	mux.HandleFunc("GET /api/show-ankety", ankety.ShowAnketyHandler)
-	mux.HandleFunc("POST /api/uploaphoto-ankety", ankety.UploadPhotoHandler)
+
+	// ИСПРАВЛЕНО: убрали "/api/" из путей
+	mux.HandleFunc("POST /api/upload-photo", ankety.UploadPhotoHandler)
+	mux.HandleFunc("GET /api/get-photo", ankety.GetPhotoHandler)
+	mux.HandleFunc("DELETE /api/delete-photo", ankety.DeletePhotoHandler)
+
 	fs := http.FileServer(http.Dir("./frontend"))
 	mux.Handle("/", fs)
 

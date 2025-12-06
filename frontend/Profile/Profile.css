@@ -571,6 +571,11 @@
 .skeleton-text.short {
     width: 60%;
 }
+#welcome-message {
+    margin-left: 15px;
+    font-weight: 500;
+    font-size: 1.1em;
+}
 
 .skeleton-text.medium {
     width: 80%;

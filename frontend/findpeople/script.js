@@ -13,7 +13,9 @@ let currentCandidateId = null;
         await loadCandidates();
         setupEventListeners();
     });
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
     // Загрузка кандидатов из базы данных
     async function loadCandidates() {
     try {

@@ -721,6 +721,11 @@ main {
     box-shadow: 0 5px 20px rgba(0,0,0,0.05);
     grid-column: 1 / -1;
 }
+#welcome-message {
+    margin-left: 15px;
+    font-weight: 500;
+    font-size: 1.1em;
+}
 
 .no-jobs h3 {
     color: #667eea;

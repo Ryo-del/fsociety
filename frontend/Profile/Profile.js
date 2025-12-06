@@ -610,7 +610,9 @@ async function createNewAnketa(data) {
         throw error;
     }
 }
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
 // Обновление анкеты
 async function updateAnketa(data) {
     console.log('Обновление анкеты:', data);

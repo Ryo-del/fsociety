@@ -163,7 +163,9 @@ async function handleCreateJobSubmit(e) {
 
 // 3. ИНИЦИАЛИЗАЦИЯ
 // -----------------------------------------------------------
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
 // Инициализация страницы create.html
 document.addEventListener('DOMContentLoaded', async function() {
     await initPage();

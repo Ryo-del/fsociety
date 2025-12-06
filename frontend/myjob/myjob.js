@@ -6,17 +6,20 @@ async function initPage() {
     try {
         const res = await fetch(`${API_BASE_URL}/checkauth`, { credentials: "include" });
         if (!res.ok) {
-            location.href = "../auth/login.html";
+            location.href = "../index.html";
             return false;
         }
 
         const user = await res.json();
-        document.getElementById("welcome-message").textContent =
-            user.name || user.username || "Пользователь";
+        const welcomeMessage = document.getElementById("welcome-message");
+        if (welcomeMessage) {
+            welcomeMessage.textContent = user.name || user.username || "Пользователь";
+            welcomeMessage.style.display = 'inline'; // ← ДОБАВИТЬ ЭТУ СТРОЧКУ
+        }
 
         return true;
     } catch {
-        location.href = "../auth/login.html";
+        location.href = "../index.html";
         return false;
     }
 }
@@ -30,7 +33,9 @@ function notify(text, type = "info") {
     setTimeout(() => box.classList.add("show"), 10);
     setTimeout(() => box.remove(), 3500);
 }
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
 // Загрузка объявлений
 async function loadMyJobs() {
     // Находим элемент сообщения, который находится вне контейнера списка

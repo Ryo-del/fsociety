@@ -23,6 +23,11 @@ type Ankety struct {
 	School      string `json:"school"`
 	Skills      string `json:"skills"`
 	Photo       string `json:"photo"`
+	Position    string `json:"position"`
+	Salary      string `json:"salary"`
+	Experience  string `json:"experience"`
+	City        string `json:"city"`
+	Jobtype     string `json:"jobtype"`
 	Description string `json:"description,omitempty"`
 }
 
@@ -214,6 +219,11 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Skills:      skills,
 		Description: description,
 		Photo:       "",
+		City:        r.FormValue("city"),
+		Position:    r.FormValue("position"),
+		Salary:      r.FormValue("salary"),
+		Experience:  r.FormValue("experience"),
+		Jobtype:     r.FormValue("jobtype"),
 	}
 
 	fmt.Printf("Создана новая анкета: ID=%s, UserID=%s, Name=%s\n", newID, userID, name)
@@ -308,6 +318,11 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 			anketyList[i].Skills = skills
 			anketyList[i].Photo = photo // Сохраняем старое фото
 			anketyList[i].Description = description
+			anketyList[i].City = r.FormValue("city")
+			anketyList[i].Position = r.FormValue("position")
+			anketyList[i].Salary = r.FormValue("salary")
+			anketyList[i].Experience = r.FormValue("experience")
+			anketyList[i].Jobtype = r.FormValue("jobtype")
 			found = true
 
 			fmt.Printf("Анкета обновлена: ID=%s\n", id)
@@ -590,4 +605,421 @@ func DeletePhotoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Photo deleted successfully"))
+}
+func GetMyAnketaHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Проверяем авторизацию
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		return
+	}
+	userID, username, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Ищем анкету пользователя
+	var myAnketa *Ankety
+	for i := range anketyList {
+		if anketyList[i].UserId == userID {
+			myAnketa = &anketyList[i]
+			break
+		}
+	}
+
+	if myAnketa == nil {
+		http.Error(w, "Anketa not found", http.StatusNotFound)
+		return
+	}
+
+	// Добавляем username в ответ
+	response := struct {
+		Ankety
+		Username string `json:"username"`
+	}{
+		Ankety:   *myAnketa,
+		Username: username,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+func DeleteAnketyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Проверяем авторизацию
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		http.Error(w, "Unauthorized: missing token", http.StatusUnauthorized)
+		return
+	}
+	userID, _, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Ищем и удаляем анкету пользователя
+	found := false
+	newAnketyList := []Ankety{}
+	for _, a := range anketyList {
+		if a.UserId == userID {
+			found = true
+			// Удаляем фотографию, если она есть
+			if a.Photo != "" {
+				photoPath := filepath.Join("uploads", a.Photo)
+				if _, err := os.Stat(photoPath); err == nil {
+					os.Remove(photoPath)
+				}
+			}
+		} else {
+			newAnketyList = append(newAnketyList, a)
+		}
+	}
+
+	if !found {
+		http.Error(w, "Anketa not found", http.StatusNotFound)
+		return
+	}
+
+	// Сохраняем обновленные данные
+	err = SaveAnkety(newAnketyList)
+	if err != nil {
+		http.Error(w, "Error saving data", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Anketa deleted successfully"))
+}
+func SearchAnketyHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Получаем параметры поиска
+	query := r.URL.Query()
+	searchTerm := query.Get("q")
+	gender := query.Get("gender")
+	minAge := query.Get("min_age")
+	maxAge := query.Get("max_age")
+	job := query.Get("job")
+	city := query.Get("city")
+	skills := query.Get("skills")
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Фильтруем анкеты
+	var filteredAnkety []Ankety
+	for _, a := range anketyList {
+		match := true
+
+		// Поиск по общему тексту
+		if searchTerm != "" {
+			searchTerm = strings.ToLower(searchTerm)
+			textToSearch := strings.ToLower(a.Name + " " + a.Job + " " + a.School + " " + a.Skills + " " + a.Description)
+			if !strings.Contains(textToSearch, searchTerm) {
+				match = false
+			}
+		}
+
+		// Фильтр по полу
+		if gender != "" && a.Gender != gender {
+			match = false
+		}
+
+		// Фильтр по возрасту
+		if minAge != "" {
+			minAgeInt := 0
+			fmt.Sscanf(minAge, "%d", &minAgeInt)
+			ageInt := 0
+			fmt.Sscanf(a.Age, "%d", &ageInt)
+			if ageInt < minAgeInt {
+				match = false
+			}
+		}
+
+		if maxAge != "" {
+			maxAgeInt := 0
+			fmt.Sscanf(maxAge, "%d", &maxAgeInt)
+			ageInt := 0
+			fmt.Sscanf(a.Age, "%d", &ageInt)
+			if ageInt > maxAgeInt {
+				match = false
+			}
+		}
+
+		// Фильтр по работе
+		if job != "" && !strings.Contains(strings.ToLower(a.Job), strings.ToLower(job)) {
+			match = false
+		}
+
+		// Фильтр по городу
+		if city != "" && !strings.Contains(strings.ToLower(a.City), strings.ToLower(city)) {
+			match = false
+		}
+
+		// Фильтр по навыкам
+		if skills != "" {
+			requiredSkills := strings.Split(strings.ToLower(skills), ",")
+			userSkills := strings.ToLower(a.Skills)
+			allSkillsFound := true
+			for _, reqSkill := range requiredSkills {
+				reqSkill = strings.TrimSpace(reqSkill)
+				if reqSkill != "" && !strings.Contains(userSkills, reqSkill) {
+					allSkillsFound = false
+					break
+				}
+			}
+			if !allSkillsFound {
+				match = false
+			}
+		}
+
+		if match {
+			filteredAnkety = append(filteredAnkety, a)
+		}
+	}
+
+	// Подготавливаем ответ
+	response := struct {
+		Count   int      `json:"count"`
+		Results []Ankety `json:"results"`
+	}{
+		Count:   len(filteredAnkety),
+		Results: filteredAnkety,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Считаем статистику
+	stats := struct {
+		TotalAnkety     int            `json:"total_ankety"`
+		GenderStats     map[string]int `json:"gender_stats"`
+		AgeGroups       map[string]int `json:"age_groups"`
+		TopJobs         map[string]int `json:"top_jobs"`
+		TopSkills       map[string]int `json:"top_skills"`
+		AnketyWithPhoto int            `json:"ankety_with_photo"`
+	}{
+		TotalAnkety:     len(anketyList),
+		GenderStats:     make(map[string]int),
+		AgeGroups:       make(map[string]int),
+		TopJobs:         make(map[string]int),
+		TopSkills:       make(map[string]int),
+		AnketyWithPhoto: 0,
+	}
+
+	for _, a := range anketyList {
+		// Статистика по полу
+		stats.GenderStats[a.Gender]++
+
+		// Статистика по возрастным группам
+		age := 0
+		fmt.Sscanf(a.Age, "%d", &age)
+		ageGroup := "unknown"
+		switch {
+		case age < 18:
+			ageGroup = "under_18"
+		case age >= 18 && age < 25:
+			ageGroup = "18_24"
+		case age >= 25 && age < 35:
+			ageGroup = "25_34"
+		case age >= 35 && age < 45:
+			ageGroup = "35_44"
+		case age >= 45 && age < 55:
+			ageGroup = "45_54"
+		case age >= 55:
+			ageGroup = "55_plus"
+		}
+		stats.AgeGroups[ageGroup]++
+
+		// Статистика по профессиям
+		stats.TopJobs[a.Job]++
+
+		// Статистика по навыкам
+		skills := strings.Split(a.Skills, ",")
+		for _, skill := range skills {
+			skill = strings.TrimSpace(skill)
+			if skill != "" {
+				stats.TopSkills[skill]++
+			}
+		}
+
+		// Статистика по фото
+		if a.Photo != "" {
+			stats.AnketyWithPhoto++
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
+}
+
+// Обработчик для экспорта анкет в CSV
+func ExportCSVHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Создаем CSV
+	var csvBuilder strings.Builder
+	csvBuilder.WriteString("ID,UserID,Name,Gender,Age,Job,School,Skills,Photo,City,Description\n")
+
+	for _, a := range anketyList {
+		csvBuilder.WriteString(fmt.Sprintf(`"%s","%s","%s","%s","%s","%s","%s","%s","%s","%s","%s"`,
+			a.Id,
+			a.UserId,
+			strings.ReplaceAll(a.Name, `"`, `""`),
+			a.Gender,
+			a.Age,
+			strings.ReplaceAll(a.Job, `"`, `""`),
+			strings.ReplaceAll(a.School, `"`, `""`),
+			strings.ReplaceAll(a.Skills, `"`, `""`),
+			a.Photo,
+			a.City,
+			strings.ReplaceAll(a.Description, `"`, `""`),
+		))
+		csvBuilder.WriteString("\n")
+	}
+
+	// Устанавливаем заголовки для скачивания файла
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=ankety_export.csv")
+	w.Write([]byte(csvBuilder.String()))
+}
+
+// Обработчик для получения анкеты по ID
+func GetAnketaByIDHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Получаем ID из URL
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Загружаем все анкеты
+	anketyList, err := LoadUser()
+	if err != nil {
+		http.Error(w, "Error loading ankety", http.StatusInternalServerError)
+		return
+	}
+
+	// Ищем анкету по ID
+	var foundAnketa *Ankety
+	for i := range anketyList {
+		if anketyList[i].Id == id {
+			foundAnketa = &anketyList[i]
+			break
+		}
+	}
+
+	if foundAnketa == nil {
+		http.Error(w, "Anketa not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(foundAnketa)
+}
+
+// Функция для регистрации всех обработчиков
+func RegisterHandlers() {
+	http.HandleFunc("/ankety/create", CreateHandler)
+	http.HandleFunc("/ankety/update", UpdateAnketyHandler)
+	http.HandleFunc("/ankety/show", ShowAnketyHandler)
+	http.HandleFunc("/ankety/my", GetMyAnketaHandler)
+	http.HandleFunc("/ankety/delete", DeleteAnketyHandler)
+	http.HandleFunc("/ankety/search", SearchAnketyHandler)
+	http.HandleFunc("/ankety/stats", GetStatsHandler)
+	http.HandleFunc("/ankety/export", ExportCSVHandler)
+	http.HandleFunc("/ankety/get", GetAnketaByIDHandler)
+	http.HandleFunc("/ankety/photo/upload", UploadPhotoHandler)
+	http.HandleFunc("/ankety/photo/get", GetPhotoHandler)
+	http.HandleFunc("/ankety/photo/delete", DeletePhotoHandler)
+}
+
+// Вспомогательная функция для проверки существования анкеты пользователя
+func HasUserAnketa(userID string) (bool, error) {
+	anketyList, err := LoadUser()
+	if err != nil {
+		return false, err
+	}
+
+	for _, a := range anketyList {
+		if a.UserId == userID {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// Вспомогательная функция для получения анкеты по UserID
+func GetAnketaByUserID(userID string) (*Ankety, error) {
+	anketyList, err := LoadUser()
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range anketyList {
+		if anketyList[i].UserId == userID {
+			return &anketyList[i], nil
+		}
+	}
+	return nil, nil
 }

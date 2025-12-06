@@ -2,101 +2,452 @@
 let currentAnketa = null;
 let photoFile = null;
 let defaultAvatar = "https://avatars.githubusercontent.com/u/583231?v=4";
+let authUser = null;
 
-// Обработка ошибок CORS
-window.addEventListener('error', function(event) {
-    if (event.message && event.message.includes('CORS')) {
-        console.error('CORS ошибка:', event.message);
-        showMessage('Проблема с подключением к серверу. Проверьте консоль браузера.', 'error');
-    }
-});
+// Функция для обрезки и сжатия изображения
+async function processImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                
+                // Рассчитываем новые размеры с сохранением пропорций
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = Math.round(height * maxWidth / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = Math.round(width * maxHeight / height);
+                        height = maxHeight;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Конвертируем в blob
+                canvas.toBlob(function(blob) {
+                    // Создаем новый файл с обработанным изображением
+                    const processedFile = new File([blob], file.name, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    resolve(processedFile);
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
 
-// Проверка доступности API
-async function checkApiAvailability() {
+// Проверка авторизации и загрузка профиля
+async function initializeProfile() {
+    console.log('Инициализация профиля...');
+    
+    // Показываем скелетон загрузки
+    showSkeletonLoading();
+    
     try {
-        const response = await fetch('/api/show-ankety', {
-            method: 'GET',
-            credentials: 'include'
-        });
-        return response.ok;
-    } catch (error) {
-        console.error('API недоступно:', error);
-        return false;
-    }
-}
-
-// Простые функции для навигации
-function logout() {
-    if (confirm('Вы уверены, что хотите выйти?')) {
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userProfile');
-        window.location.href = '../index.html';
-    }
-}
-
-function goToProfile() {
-    window.location.href = 'profile.html';
-}
-
-// Проверка авторизации
-async function checkAuthBeforeLoad() {
-    try {
-        console.log('Проверка авторизации...');
         const response = await fetch('/checkauth', {
             method: 'GET',
             credentials: 'include'
         });
         
-        console.log('Статус проверки авторизации:', response.status);
-        
-        if (!response.ok) {
+        if (response.ok) {
+            authUser = await response.json();
+            console.log('Авторизованный пользователь:', authUser);
+            
+            // Обновляем приветственное сообщение
+            updateWelcomeMessage(authUser.username || 'Пользователь');
+            
+            // Загружаем анкету пользователя
+            await loadUserProfile();
+        } else {
             console.warn('Пользователь не авторизован');
-            return null;
+            showMessage('Для доступа к профилю необходимо войти в систему', 'warning');
+            setTimeout(() => {
+                window.location.href = '../index.html';
+            }, 2000);
         }
-        
-        const userData = await response.json();
-        console.log('Авторизованный пользователь:', userData);
-        return userData;
     } catch (error) {
         console.error('Ошибка проверки авторизации:', error);
-        return null;
+        showMessage('Ошибка проверки авторизации', 'error');
+        hideSkeletonLoading();
     }
 }
 
-// Показываем приветственное сообщение если есть пользователь
-window.onload = async function() {
-    console.log('Страница профиля загружается...');
+// Показать скелетон загрузки
+function showSkeletonLoading() {
+    document.getElementById('profile-name-display').innerHTML = 
+        '<div class="skeleton skeleton-text" style="width: 200px; height: 40px;"></div>';
     
-    const welcomeMessage = document.getElementById('welcome-message');
-    const userName = localStorage.getItem('userName') || 'octocat';
-    if (userName) {
-        welcomeMessage.textContent = `👤 ${userName}`;
-        welcomeMessage.style.display = 'inline';
-    }
+    document.getElementById('profile-job-display').innerHTML = 
+        '<div class="skeleton skeleton-text" style="width: 150px; height: 25px;"></div>';
     
-    // Проверяем доступность API
-    const apiAvailable = await checkApiAvailability();
-    if (!apiAvailable) {
-        console.warn('API недоступно. Используем локальное хранилище.');
-        showMessage('Сервер временно недоступен. Работаем в локальном режиме.', 'warning');
-    }
+    document.getElementById('profile-stats-display').innerHTML = `
+        <div class="stat-card">
+            <div class="skeleton skeleton-text" style="width: 120px; height: 15px; margin-bottom: 10px;"></div>
+            <div class="skeleton skeleton-text" style="width: 80px; height: 25px;"></div>
+        </div>
+        <div class="stat-card">
+            <div class="skeleton skeleton-text" style="width: 120px; height: 15px; margin-bottom: 10px;"></div>
+            <div class="skeleton skeleton-text" style="width: 80px; height: 25px;"></div>
+        </div>
+        <div class="stat-card">
+            <div class="skeleton skeleton-text" style="width: 120px; height: 15px; margin-bottom: 10px;"></div>
+            <div class="skeleton skeleton-text" style="width: 80px; height: 25px;"></div>
+        </div>
+    `;
     
-    // Загружаем данные анкеты пользователя
-    await loadUserProfile();
+    document.getElementById('profile-description-display').innerHTML = `
+        <div class="skeleton skeleton-text" style="margin-bottom: 10px;"></div>
+        <div class="skeleton skeleton-text" style="margin-bottom: 10px;"></div>
+        <div class="skeleton skeleton-text" style="width: 70%;"></div>
+    `;
     
-    // Назначаем обработчики
-    document.getElementById('profile-edit-button').onclick = openProfileModal;
-    document.getElementById('profile-edit-form').onsubmit = handleProfileSubmit;
-    document.getElementById('photo-upload-area').onclick = () => document.getElementById('photo-input').click();
-    document.getElementById('photo-input').onchange = handlePhotoSelect;
-    document.getElementById('delete-photo-btn').onclick = deleteCurrentPhoto;
-    
-    // Обработка перетаскивания файлов
-    setupDragAndDrop();
-};
+    document.getElementById('profile-skills-display').innerHTML = `
+        <div class="skeleton skeleton-text" style="width: 100%; height: 25px; margin-bottom: 10px;"></div>
+        <div class="skeleton skeleton-text" style="width: 80%; height: 25px;"></div>
+    `;
+}
 
-// Настройка drag & drop
+// Скрыть скелетон загрузки
+function hideSkeletonLoading() {
+    // Код скрытия скелетона
+}
+
+// Обновление приветственного сообщения
+function updateWelcomeMessage(username) {
+    const welcomeMessage = document.getElementById('welcome-message');
+    if (welcomeMessage) {
+        welcomeMessage.textContent = `👤 ${username}`;
+        welcomeMessage.style.display = 'inline';
+        localStorage.setItem('userName', username);
+    }
+}
+
+// Загрузка профиля пользователя
+async function loadUserProfile() {
+    try {
+        console.log('Загрузка профиля пользователя...');
+        
+        const response = await fetch('/api/ankety/my', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        
+        console.log('Статус загрузки профиля:', response.status);
+        
+        if (response.ok) {
+            const profileData = await response.json();
+            console.log('Получен профиль:', profileData);
+            
+            currentAnketa = profileData;
+            updateProfileDisplay(profileData);
+            
+            const editButton = document.getElementById('profile-edit-button');
+            editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
+            
+        } else if (response.status === 404) {
+            console.log('Анкета не найдена');
+            displayEmptyProfile();
+            
+            const editButton = document.getElementById('profile-edit-button');
+            editButton.innerHTML = '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
+            
+        } else {
+            throw new Error(`Ошибка сервера: ${response.status}`);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка загрузки профиля:', error);
+        showMessage('Не удалось загрузить профиль', 'error');
+        displayEmptyProfile();
+    }
+}
+
+// Отображение пустого профиля
+function displayEmptyProfile() {
+    document.getElementById('profile-name-display').textContent = 'Неизвестный пользователь';
+    document.getElementById('profile-job-display').innerHTML = '<i class="fas fa-briefcase" style="margin-right: 5px;"></i> Не указано';
+    document.getElementById('profile-description-display').textContent = 'У вас еще нет созданной анкеты. Нажмите "Создать анкету" чтобы заполнить информацию о себе.';
+    document.getElementById('profile-avatar-display').src = defaultAvatar;
+    
+    document.getElementById('profile-stats-display').innerHTML = `
+        <div class="stat-card">
+            <h4>Возраст</h4>
+            <p>Не указан</p>
+        </div>
+        <div class="stat-card">
+            <h4>Город</h4>
+            <p>Не указан</p>
+        </div>
+        <div class="stat-card">
+            <h4>Опыт работы</h4>
+            <p>Не указан</p>
+        </div>
+    `;
+    
+    document.getElementById('profile-skills-display').innerHTML = 'Навыки не указаны';
+}
+
+// Обновление отображения профиля
+function updateProfileDisplay(anketa) {
+    console.log('Обновление отображения профиля:', anketa);
+    
+    // Обновляем имя
+    document.getElementById('profile-name-display').textContent = anketa.name || authUser?.username || 'Пользователь';
+    
+    // Обновляем профессию в бейдже
+    const jobDisplay = document.getElementById('profile-job-display');
+    if (anketa.job) {
+        jobDisplay.innerHTML = `<i class="fas fa-briefcase" style="margin-right: 5px;"></i> ${anketa.job}`;
+        jobDisplay.style.display = 'inline-block';
+    } else {
+        jobDisplay.style.display = 'none';
+    }
+    
+    // Обновляем фото профиля
+    updateProfilePhoto(anketa.photo);
+    
+    // Обновляем статистику
+    updateProfileStats(anketa);
+    
+    // Обновляем описание
+    document.getElementById('profile-description-display').textContent = 
+        anketa.description || 'Нет описания';
+    
+    // Обновляем навыки
+    updateSkillsDisplay(anketa.skills);
+    
+    // Обновляем приветственное сообщение
+    updateWelcomeMessage(anketa.name || authUser?.username || 'Пользователь');
+}
+
+// Обновление статистики профиля
+function updateProfileStats(anketa) {
+    const statsHTML = `
+        <div class="stat-card">
+            <h4><i class="fas fa-birthday-cake" style="margin-right: 5px;"></i> Возраст</h4>
+            <p>${anketa.age || 'Не указан'}</p>
+        </div>
+        <div class="stat-card">
+            <h4><i class="fas fa-map-marker-alt" style="margin-right: 5px;"></i> Город</h4>
+            <p>${anketa.city || 'Не указан'}</p>
+        </div>
+        <div class="stat-card">
+            <h4><i class="fas fa-chart-line" style="margin-right: 5px;"></i> Опыт работы</h4>
+            <p>${anketa.experience || 'Не указан'}</p>
+        </div>
+        <div class="stat-card">
+            <h4><i class="fas fa-graduation-cap" style="margin-right: 5px;"></i> Образование</h4>
+            <p>${anketa.school || 'Не указано'}</p>
+        </div>
+        ${anketa.salary ? `
+        <div class="stat-card">
+            <h4><i class="fas fa-money-bill-wave" style="margin-right: 5px;"></i> Зарплата</h4>
+            <p>${anketa.salary}</p>
+        </div>
+        ` : ''}
+        ${anketa.jobtype ? `
+        <div class="stat-card">
+            <h4><i class="fas fa-briefcase" style="margin-right: 5px;"></i> Тип работы</h4>
+            <p>${anketa.jobtype}</p>
+        </div>
+        ` : ''}
+    `;
+    
+    document.getElementById('profile-stats-display').innerHTML = statsHTML;
+}
+
+// Обновление отображения навыков
+function updateSkillsDisplay(skills) {
+    if (!skills) {
+        document.getElementById('profile-skills-display').innerHTML = 'Навыки не указаны';
+        return;
+    }
+    
+    const skillsArray = skills.split(',').map(skill => skill.trim()).filter(skill => skill);
+    const skillsHTML = skillsArray.map(skill => 
+        `<span class="skill-tag">${skill}</span>`
+    ).join('');
+    
+    document.getElementById('profile-skills-display').innerHTML = skillsHTML;
+}
+
+// Обновление фото профиля
+// Обновление фото профиля с проверкой существования
+async function updateProfilePhoto(photoPath) {
+    const avatarDisplay = document.getElementById('profile-avatar-display');
+    
+    if (photoPath && photoPath.trim() !== "") {
+        console.log('Обновление фото по пути:', photoPath);
+        
+        if (photoPath.startsWith('blob:')) {
+            // Используем локальный blob
+            avatarDisplay.src = photoPath;
+            return;
+        }
+        
+        // Извлекаем только имя файла из пути
+        let filename = photoPath;
+        if (photoPath.includes('/')) {
+            filename = photoPath.split('/').pop();
+        }
+        console.log('Извлечено имя файла:', filename);
+        
+        // Проверяем, есть ли фото на сервере
+        try {
+            // Используем GET запрос с небольшим таймаутом
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(`/api/get-photo?filename=${encodeURIComponent(filename)}&t=${Date.now()}`, {
+                method: 'GET',
+                credentials: 'include',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
+                // Создаем URL из blob
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                avatarDisplay.src = objectUrl;
+                console.log('Фото успешно загружено с сервера');
+            } else {
+                console.warn('Фото не найдено или некорректный ответ:', response.status);
+                avatarDisplay.src = defaultAvatar;
+            }
+            
+        } catch (error) {
+            console.error('Ошибка при проверке фото:', error);
+            // Если фото не загрузилось, пробуем прямой путь
+            avatarDisplay.src = `/api/get-photo?filename=${encodeURIComponent(filename)}&t=${Date.now()}`;
+            
+            // Устанавливаем обработчик ошибок на случай если прямой путь тоже не сработает
+            avatarDisplay.onerror = function() {
+                console.warn('Прямая загрузка фото не удалась, использую дефолтное фото');
+                this.src = defaultAvatar;
+                this.onerror = null; // Предотвращаем бесконечный цикл
+            };
+        }
+        
+    } else {
+        console.log('Путь к фото пустой, использую дефолтное фото');
+        avatarDisplay.src = defaultAvatar;
+    }
+}
+
+
+// Проверка существования фото на сервере
+async function checkPhotoExists(filename) {
+    try {
+        const response = await fetch(`/api/get-photo?filename=${encodeURIComponent(filename)}`, {
+            method: 'HEAD',
+            credentials: 'include'
+        });
+        
+        return response.ok;
+    } catch (error) {
+        console.error('Ошибка проверки фото:', error);
+        return false;
+    }
+}
+
+// Открытие модального окна для редактирования
+function openProfileModal() {
+    console.log('Открытие модального окна профиля');
+    
+    const modal = document.getElementById('profile-edit-modal');
+    const modalTitle = document.getElementById('profile-modal-title');
+    
+    // Сбрасываем состояние
+    photoFile = null;
+    document.getElementById('photo-preview').style.display = 'none';
+    document.getElementById('photo-input').value = '';
+    
+    if (currentAnketa && currentAnketa.id) {
+        modalTitle.textContent = 'Редактировать профиль';
+        document.getElementById('profile-save-button').innerHTML = 
+            '<i class="fas fa-save" style="margin-right: 8px;"></i> Сохранить изменения';
+        
+        fillProfileForm(currentAnketa);
+        showCurrentPhoto(currentAnketa.photo);
+        
+    } else {
+        modalTitle.textContent = 'Создать анкету';
+        document.getElementById('profile-save-button').innerHTML = 
+            '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
+        
+        document.getElementById('profile-edit-form').reset();
+        document.getElementById('profile-id').value = '';
+        
+        document.getElementById('current-photo-container').style.display = 'none';
+        document.getElementById('photo-upload-area').style.display = 'block';
+    }
+    
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+// Заполнение формы данными анкеты
+function fillProfileForm(anketa) {
+    document.getElementById('profile-id').value = anketa.id || '';
+    document.getElementById('profile-name').value = anketa.name || '';
+    document.getElementById('profile-age').value = anketa.age || '';
+    document.getElementById('profile-gender').value = anketa.gender || '';
+    document.getElementById('profile-city').value = anketa.city || '';
+    document.getElementById('profile-position').value = anketa.position || '';
+    document.getElementById('profile-job').value = anketa.job || '';
+    document.getElementById('profile-school').value = anketa.school || '';
+    document.getElementById('profile-skills').value = anketa.skills || '';
+    document.getElementById('profile-experience').value = anketa.experience || '';
+    document.getElementById('profile-jobtype').value = anketa.jobtype || '';
+    document.getElementById('profile-salary').value = anketa.salary || '';
+    document.getElementById('profile-description').value = anketa.description || '';
+}
+
+// Показ текущего фото
+function showCurrentPhoto(photoPath) {
+    const currentPhotoContainer = document.getElementById('current-photo-container');
+    const currentPhotoPreview = document.getElementById('current-photo-preview');
+    const uploadArea = document.getElementById('photo-upload-area');
+    
+    if (photoPath && photoPath.trim() !== "") {
+        currentPhotoPreview.src = document.getElementById('profile-avatar-display').src;
+        currentPhotoContainer.style.display = 'block';
+        uploadArea.style.display = 'none';
+    } else {
+        currentPhotoContainer.style.display = 'none';
+        uploadArea.style.display = 'block';
+    }
+}
+
+// Закрытие модального окна
+function closeProfileModal() {
+    const modal = document.getElementById('profile-edit-modal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Drag & drop для фото
 function setupDragAndDrop() {
     const uploadArea = document.getElementById('photo-upload-area');
     
@@ -114,7 +465,7 @@ function setupDragAndDrop() {
         this.style.borderColor = '#667eea';
     });
     
-    uploadArea.addEventListener('drop', function(e) {
+    uploadArea.addEventListener('drop', async function(e) {
         e.preventDefault();
         e.stopPropagation();
         this.style.backgroundColor = '#f8f9fa';
@@ -122,297 +473,47 @@ function setupDragAndDrop() {
         
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            handlePhotoFile(files[0]);
+            await handlePhotoFile(files[0]);
         }
     });
 }
 
-// Сохранение профиля в localStorage
-function saveProfileToLocalStorage(data) {
-    localStorage.setItem('userProfile', JSON.stringify(data));
-}
-
-// Загрузка профиля из localStorage
-function loadProfileFromLocalStorage() {
-    const savedProfile = localStorage.getItem('userProfile');
-    return savedProfile ? JSON.parse(savedProfile) : null;
-}
-
-// Функция для загрузки профиля пользователя
-async function loadUserProfile() {
-    try {
-        console.log('Загрузка профиля...');
-        
-        // Сначала проверяем авторизацию
-        const authUser = await checkAuthBeforeLoad();
-        if (!authUser) {
-            console.log('Пользователь не авторизован, проверяем локальное хранилище');
-            
-            // Пробуем загрузить из localStorage
-            const savedProfile = loadProfileFromLocalStorage();
-            if (savedProfile) {
-                console.log('Найден профиль в localStorage:', savedProfile);
-                currentAnketa = savedProfile;
-                updateProfileDisplay(savedProfile);
-                
-                const editButton = document.getElementById('profile-edit-button');
-                editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
-                return;
-            }
-            
-            console.log('Профиль не найден, показываем кнопку создания');
-            const editButton = document.getElementById('profile-edit-button');
-            editButton.innerHTML = '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
-            return;
-        }
-        
-        // Затем загружаем анкеты с сервера
-        console.log('Загрузка анкет с сервера...');
-        const response = await fetch('/api/show-ankety', {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json'
-            },
-            credentials: 'include'
-        });
-        
-        console.log('Статус загрузки анкет:', response.status);
-        
-        if (response.ok) {
-            const realData = await response.json();
-            console.log('Полученные данные анкет:', realData);
-            
-            // Находим анкету текущего пользователя
-            currentAnketa = realData.find(anketa => {
-                // Проверяем несколько вариантов ID
-                const userId = authUser.id || authUser.user_id;
-                const anketaUserId = anketa.user_id || anketa.userId;
-                return anketaUserId && userId && anketaUserId.toString() === userId.toString();
-            });
-            
-            if (currentAnketa) {
-                console.log('Найдена анкета пользователя:', currentAnketa);
-                updateProfileDisplay(currentAnketa);
-                saveProfileToLocalStorage(currentAnketa); // Сохраняем в localStorage для резервной копии
-                
-                const editButton = document.getElementById('profile-edit-button');
-                editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
-            } else {
-                console.log('Анкета не найдена на сервере, проверяем localStorage');
-                
-                // Пробуем локальное хранилище
-                const savedProfile = loadProfileFromLocalStorage();
-                if (savedProfile) {
-                    currentAnketa = savedProfile;
-                    updateProfileDisplay(savedProfile);
-                    
-                    const editButton = document.getElementById('profile-edit-button');
-                    editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
-                } else {
-                    console.log('Анкета не найдена, предлагаем создать');
-                    const editButton = document.getElementById('profile-edit-button');
-                    editButton.innerHTML = '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
-                }
-            }
-            
-        } else {
-            const errorText = await response.text();
-            console.error('Ошибка загрузки анкет с сервера:', errorText);
-            
-            // Пробуем локальное хранилище при ошибке сервера
-            const savedProfile = loadProfileFromLocalStorage();
-            if (savedProfile) {
-                console.log('Используем профиль из localStorage из-за ошибки сервера');
-                currentAnketa = savedProfile;
-                updateProfileDisplay(savedProfile);
-                
-                const editButton = document.getElementById('profile-edit-button');
-                editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
-            } else {
-                throw new Error('Не удалось загрузить анкеты');
-            }
-        }
-        
-    } catch (error) {
-        console.error('Ошибка загрузки профиля:', error);
-        
-        // Пробуем локальное хранилище
-        const savedProfile = loadProfileFromLocalStorage();
-        if (savedProfile) {
-            console.log('Используем профиль из localStorage после ошибки');
-            currentAnketa = savedProfile;
-            updateProfileDisplay(savedProfile);
-            
-            const editButton = document.getElementById('profile-edit-button');
-            editButton.innerHTML = '<i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль';
-        } else {
-            showMessage('Не удалось загрузить профиль. Создайте новую анкету.', 'info');
-            
-            // Показываем кнопку создания анкеты
-            const editButton = document.getElementById('profile-edit-button');
-            editButton.innerHTML = '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
-        }
-    }
-}
-
-// Обновление отображения профиля
-function updateProfileDisplay(anketa) {
-    console.log('Обновление отображения профиля:', anketa);
-    
-    // Обновляем имя
-    document.getElementById('profile-name-display').textContent = anketa.name;
-    
-    // Обновляем фото профиля
-    updateProfilePhoto(anketa.photo);
-    
-    // Обновляем основную информацию
-    const bioHTML = `
-        <p><strong>Возраст:</strong> ${anketa.age}</p>
-        <p><strong>Пол:</strong> ${anketa.gender}</p>
-        <p><strong>Профессия:</strong> ${anketa.job}</p>
-        <p><strong>Образование:</strong> ${anketa.school}</p>
-        ${anketa.skills ? `<p><strong>Навыки:</strong> ${anketa.skills}</p>` : ''}
-        ${anketa.description ? `<p><strong>О себе:</strong> ${anketa.description}</p>` : ''}
-    `;
-    
-    document.getElementById('profile-bio-display').innerHTML = bioHTML;
-    
-    // Сохраняем в localStorage для отображения в header
-    localStorage.setItem('userName', anketa.name);
-    const welcomeMessage = document.getElementById('welcome-message');
-    welcomeMessage.textContent = `👤 ${anketa.name}`;
-    welcomeMessage.style.display = 'inline';
-}
-
-// Обновление фото профиля
-function updateProfilePhoto(photoPath) {
-    const avatarDisplay = document.getElementById('profile-avatar-display');
-    
-    if (photoPath && photoPath.trim() !== "") {
-        // Если фото из localStorage (превью), используем его
-        if (photoPath.startsWith('blob:')) {
-            avatarDisplay.src = photoPath;
-        } else {
-            // Используем фото из сервера
-            avatarDisplay.src = `/api/get-photo?filename=${encodeURIComponent(photoPath)}`;
-        }
-    } else {
-        // Используем дефолтное фото
-        avatarDisplay.src = defaultAvatar;
-    }
-}
-
-// Открытие модального окна
-function openProfileModal() {
-    console.log('Открытие модального окна профиля');
-    
-    const modal = document.getElementById('profile-edit-modal');
-    const modalTitle = document.getElementById('profile-modal-title');
-    
-    // Сбрасываем выбранное фото
-    photoFile = null;
-    document.getElementById('photo-preview').style.display = 'none';
-    document.getElementById('photo-input').value = '';
-    
-    if (currentAnketa) {
-        // Режим редактирования
-        modalTitle.textContent = 'Редактировать профиль';
-        document.getElementById('profile-save-button').innerHTML = 
-            '<i class="fas fa-save" style="margin-right: 8px;"></i> Сохранить изменения';
-        
-        // Заполняем форму текущими данными
-        document.getElementById('profile-id').value = currentAnketa.id || '';
-        document.getElementById('profile-name').value = currentAnketa.name || '';
-        document.getElementById('profile-age').value = currentAnketa.age || '';
-        document.getElementById('profile-gender').value = currentAnketa.gender || '';
-        document.getElementById('profile-job').value = currentAnketa.job || '';
-        document.getElementById('profile-school').value = currentAnketa.school || '';
-        document.getElementById('profile-skills').value = currentAnketa.skills || '';
-        document.getElementById('profile-description').value = currentAnketa.description || '';
-        
-        // Показываем текущее фото
-        const currentPhotoContainer = document.getElementById('current-photo-container');
-        const currentPhotoPreview = document.getElementById('current-photo-preview');
-        const uploadArea = document.getElementById('photo-upload-area');
-        
-        if (currentAnketa.photo && currentAnketa.photo.trim() !== "") {
-            if (currentAnketa.photo.startsWith('blob:')) {
-                currentPhotoPreview.src = currentAnketa.photo;
-            } else {
-                currentPhotoPreview.src = `/api/get-photo?filename=${encodeURIComponent(currentAnketa.photo)}`;
-            }
-            currentPhotoContainer.style.display = 'block';
-            uploadArea.style.display = 'none';
-        } else {
-            currentPhotoContainer.style.display = 'none';
-            uploadArea.style.display = 'block';
-        }
-    } else {
-        // Режим создания
-        modalTitle.textContent = 'Создать анкету';
-        document.getElementById('profile-save-button').innerHTML = 
-            '<i class="fas fa-plus" style="margin-right: 8px;"></i> Создать анкету';
-        
-        // Очищаем форму
-        document.getElementById('profile-edit-form').reset();
-        document.getElementById('profile-id').value = '';
-        
-        // Скрываем текущее фото
-        document.getElementById('current-photo-container').style.display = 'none';
-        document.getElementById('photo-upload-area').style.display = 'block';
-    }
-    
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-// Закрытие модального окна
-function closeProfileModal() {
-    const modal = document.getElementById('profile-edit-modal');
-    modal.style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
-
-// Обработка выбора фото
-function handlePhotoSelect(event) {
-    const file = event.target.files[0];
-    handlePhotoFile(file);
-}
-
 // Обработка файла фото
-function handlePhotoFile(file) {
+async function handlePhotoFile(file) {
     if (!file) return;
     
-    // Проверка типа файла
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-        showMessage('Неверный формат файла. Разрешены: JPG, PNG, GIF', 'error');
+        showMessage('Неверный формат файла. Разрешены: JPG, PNG, GIF, WebP', 'error');
         return;
     }
     
-    // Проверка размера файла (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-        showMessage('Файл слишком большой. Максимальный размер: 10MB', 'error');
-        return;
-    }
-    
-    photoFile = file;
-    
-    // Показываем превью
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const preview = document.getElementById('photo-preview');
-        preview.src = e.target.result;
-        preview.style.display = 'block';
+    // Обрабатываем изображение (обрезаем и сжимаем)
+    try {
+        showMessage('Обработка изображения...', 'info');
+        const processedFile = await processImage(file);
+        photoFile = processedFile;
         
-        // Скрываем текущее фото и показываем превью
-        document.getElementById('current-photo-container').style.display = 'none';
-        document.getElementById('photo-upload-area').style.display = 'block';
-    };
-    reader.readAsDataURL(file);
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('photo-preview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            
+            document.getElementById('current-photo-container').style.display = 'none';
+            document.getElementById('photo-upload-area').style.display = 'block';
+            
+            showMessage('Изображение готово к загрузке', 'success');
+        };
+        reader.readAsDataURL(processedFile);
+        
+    } catch (error) {
+        console.error('Ошибка обработки изображения:', error);
+        showMessage('Ошибка обработки изображения', 'error');
+    }
 }
 
-// Удаление текущего фото
+// Удаление фото
 async function deleteCurrentPhoto() {
     if (!confirm('Вы уверены, что хотите удалить текущее фото?')) {
         return;
@@ -427,14 +528,11 @@ async function deleteCurrentPhoto() {
         if (response.ok) {
             showMessage('Фото удалено', 'success');
             
-            // Обновляем локальные данные
             if (currentAnketa) {
                 currentAnketa.photo = '';
                 updateProfilePhoto('');
-                saveProfileToLocalStorage(currentAnketa);
             }
             
-            // В модальном окне скрываем текущее фото и показываем загрузку
             document.getElementById('current-photo-container').style.display = 'none';
             document.getElementById('photo-upload-area').style.display = 'block';
             
@@ -443,33 +541,20 @@ async function deleteCurrentPhoto() {
         }
     } catch (error) {
         console.error('Ошибка удаления фото:', error);
-        
-        // Локальное удаление
-        if (currentAnketa) {
-            currentAnketa.photo = '';
-            updateProfilePhoto('');
-            saveProfileToLocalStorage(currentAnketa);
-            
-            showMessage('Фото удалено (локально)', 'success');
-            
-            // В модальном окне скрываем текущее фото и показываем загрузку
-            document.getElementById('current-photo-container').style.display = 'none';
-            document.getElementById('photo-upload-area').style.display = 'block';
-        } else {
-            showMessage('Не удалось удалить фото', 'error');
-        }
+        showMessage('Не удалось удалить фото', 'error');
     }
 }
 
-// Загрузка фото на сервер - ИСПРАВЛЕНО: правильный endpoint
+// Загрузка фото на сервер
 async function uploadPhoto(file) {
-    console.log('Начало загрузки фото:', file.name);
+    console.log('Загрузка фото на сервер:', file.name);
     
     const formData = new FormData();
     formData.append('photo', file);
     
     try {
-        // ИСПРАВЛЕНО: '/api/upload-photo' вместо '/api/get-photo'
+        showMessage('Загрузка фото...', 'info');
+        
         const response = await fetch('/api/upload-photo', {
             method: 'POST',
             body: formData,
@@ -479,45 +564,25 @@ async function uploadPhoto(file) {
         console.log('Статус загрузки фото:', response.status);
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Ошибка загрузки фото:', errorText);
-            
-            // Возвращаем локальное фото для режима без сервера
-            return {
-                success: true,
-                photo: URL.createObjectURL(file), // Создаем локальную ссылку
-                local: true
-            };
+            throw new Error(`Ошибка загрузки: ${response.status}`);
         }
         
         const result = await response.json();
         console.log('Фото загружено успешно:', result);
+        showMessage('Фото успешно загружено!', 'success');
         return result;
         
     } catch (error) {
-        console.error('Ошибка в uploadPhoto:', error);
-        
-        // Локальное сохранение
-        return {
-            success: true,
-            photo: URL.createObjectURL(file),
-            local: true
-        };
+        console.error('Ошибка загрузки фото:', error);
+        throw error;
     }
 }
 
-// Функция для создания новой анкеты
+// Создание новой анкеты
 async function createNewAnketa(data) {
-    console.log('Создание новой анкеты с данными:', data);
+    console.log('Создание новой анкеты:', data);
     
     try {
-        // Проверяем авторизацию
-        const authUser = await checkAuthBeforeLoad();
-        if (!authUser) {
-            throw new Error('Пользователь не авторизован');
-        }
-        
-        console.log('Отправляем данные на сервер:', data);
         const response = await fetch('/api/create-ankety', {
             method: 'POST',
             headers: {
@@ -527,54 +592,27 @@ async function createNewAnketa(data) {
             credentials: 'include'
         });
         
-        console.log('Статус ответа создания анкеты:', response.status);
+        console.log('Статус создания анкеты:', response.status);
         
-        if (response.ok) {
-            const result = await response.json();
-            console.log('Успешный ответ от сервера:', result);
-            showMessage('Анкета успешно создана!', 'success');
-            
-            // Сохраняем ID новой анкеты
-            data.id = result.id;
-            return result;
-        } else {
+        if (!response.ok) {
             const errorText = await response.text();
-            console.error('Ошибка сервера при создании:', errorText);
-            
-            // Локальное сохранение при ошибке сервера
-            if (!data.id) {
-                data.id = 'local_' + Date.now();
-            }
-            saveProfileToLocalStorage(data);
-            showMessage('Анкета сохранена локально (сервер недоступен)', 'warning');
-            
-            return {
-                success: true,
-                id: data.id,
-                local: true
-            };
+            throw new Error(`Ошибка создания: ${response.status} - ${errorText}`);
         }
+        
+        const result = await response.json();
+        console.log('Анкета создана:', result);
+        showMessage('Анкета успешно создана!', 'success');
+        return result;
+        
     } catch (error) {
-        console.error('Ошибка запроса создания анкеты:', error);
-        
-        // Локальное сохранение при ошибке сети
-        if (!data.id) {
-            data.id = 'local_' + Date.now();
-        }
-        saveProfileToLocalStorage(data);
-        showMessage('Анкета сохранена локально (ошибка сети)', 'warning');
-        
-        return {
-            success: true,
-            id: data.id,
-            local: true
-        };
+        console.error('Ошибка создания анкеты:', error);
+        throw error;
     }
 }
 
-// Функция для обновления анкеты
+// Обновление анкеты
 async function updateAnketa(data) {
-    console.log('Обновление анкеты с данными:', data);
+    console.log('Обновление анкеты:', data);
     
     try {
         const response = await fetch('/api/update-ankety', {
@@ -586,96 +624,67 @@ async function updateAnketa(data) {
             credentials: 'include'
         });
         
-        console.log('Статус ответа обновления:', response.status);
+        console.log('Статус обновления:', response.status);
         
-        if (response.ok) {
-            const result = await response.text();
-            console.log('Успешное обновление:', result);
-            showMessage('Профиль успешно обновлен!', 'success');
-            return true;
-        } else {
+        if (!response.ok) {
             const errorText = await response.text();
-            console.error('Ошибка сервера при обновлении:', errorText);
-            
-            // Локальное сохранение при ошибке сервера
-            saveProfileToLocalStorage(data);
-            showMessage('Изменения сохранены локально (сервер недоступен)', 'warning');
-            return true;
+            throw new Error(`Ошибка обновления: ${response.status} - ${errorText}`);
         }
-    } catch (error) {
-        console.error('Ошибка запроса обновления:', error);
         
-        // Локальное сохранение при ошибке сети
-        saveProfileToLocalStorage(data);
-        showMessage('Изменения сохранены локально (ошибка сети)', 'warning');
+        showMessage('Профиль успешно обновлен!', 'success');
         return true;
+        
+    } catch (error) {
+        console.error('Ошибка обновления анкеты:', error);
+        throw error;
     }
 }
 
-// Обработка отправки формы
+// Обработка отправки формы профиля
 async function handleProfileSubmit(e) {
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('Обработка отправки формы...');
+    console.log('Обработка отправки формы профиля...');
     
+    // Собираем данные формы
     const formData = new FormData(e.target);
-    const data = {
-        id: formData.get('id'),
-        name: formData.get('name'),
-        age: formData.get('age'),
-        gender: formData.get('gender'),
-        job: formData.get('job'),
-        school: formData.get('school'),
-        skills: formData.get('skills'),
-        description: formData.get('description') || ''
-    };
+    const data = Object.fromEntries(formData.entries());
     
-    console.log('Данные для отправки на сервер:', data);
+    console.log('Данные формы:', data);
     
-    // Валидация обязательных полей
+    // Валидация
     if (!data.name || !data.age || !data.gender || !data.job || !data.school || !data.skills) {
         showMessage('Пожалуйста, заполните все обязательные поля', 'error');
         return;
     }
     
     try {
-        // Шаг 1: Если есть фото, загружаем его
+        let photoResult = null;
         if (photoFile) {
-            console.log('Загрузка фото...');
-            const uploadResult = await uploadPhoto(photoFile);
-            console.log('Результат загрузки фото:', uploadResult);
-            
-            // Добавляем фото к данным
-            if (uploadResult && uploadResult.photo) {
-                data.photo = uploadResult.photo;
+            photoResult = await uploadPhoto(photoFile);
+            if (photoResult && photoResult.photo) {
+                data.photo = photoResult.photo;
             }
-        } else if (currentAnketa && currentAnketa.photo) {
-            // Сохраняем существующее фото
-            data.photo = currentAnketa.photo;
         }
         
-        // Шаг 2: Сохраняем анкету
+        let result;
         if (data.id) {
-            console.log('Обновление существующей анкеты...');
-            await updateAnketa(data);
+            result = await updateAnketa(data);
         } else {
-            console.log('Создание новой анкеты...');
-            const result = await createNewAnketa(data);
+            result = await createNewAnketa(data);
             if (result && result.id) {
                 data.id = result.id;
             }
         }
         
-        // Обновляем локальные данные
-        currentAnketa = data;
-        saveProfileToLocalStorage(data);
+        currentAnketa = { ...currentAnketa, ...data };
         
         closeProfileModal();
         
-        // Обновляем отображение профиля
+        // Перезагружаем профиль для обновления данных
         setTimeout(() => {
-            updateProfileDisplay(data);
+            loadUserProfile();
         }, 300);
         
     } catch (error) {
@@ -686,29 +695,21 @@ async function handleProfileSubmit(e) {
 
 // Функция для показа сообщений
 function showMessage(message, type = 'info') {
-    // Удаляем предыдущие сообщения
     const existingMessage = document.querySelector('.form-message');
     if (existingMessage) {
         existingMessage.remove();
     }
     
-    // Создаем новое сообщение
     const messageDiv = document.createElement('div');
     messageDiv.className = `form-message ${type}`;
-    messageDiv.textContent = message;
-    messageDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        max-width: 400px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    messageDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" 
+           style="margin-right: 10px;"></i>
+        ${message}
     `;
     
-    // Вставляем сообщение
     document.body.appendChild(messageDiv);
     
-    // Автоматически скрываем сообщение через 5 секунд
     setTimeout(() => {
         if (messageDiv.parentNode) {
             messageDiv.style.opacity = '0';
@@ -722,64 +723,82 @@ function showMessage(message, type = 'info') {
     }, 5000);
 }
 
-// Закрытие модального окна по клику вне его
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('profile-edit-modal');
-    const modalContent = document.querySelector('.modal-content');
-    
-    if (modal.style.display === 'flex' && 
-        !modalContent.contains(event.target) && 
-        !event.target.closest('#profile-edit-button') &&
-        !event.target.closest('.profile-avatar-container') &&
-        !event.target.closest('.avatar-overlay')) {
-        closeProfileModal();
-    }
-});
-
-// Закрытие по Escape
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeProfileModal();
-    }
-});
-
-// Дополнительные вспомогательные функции
-async function testCreateAnketa() {
-    console.log('Тестовое создание анкеты...');
-    
-    const testData = {
-        name: 'Тестовый пользователь',
-        age: '25',
-        gender: 'мужской',
-        job: 'Разработчик',
-        school: 'МГУ',
-        skills: 'Go, JavaScript, HTML, CSS',
-        description: 'Тестовое описание профиля'
-    };
-    
-    try {
-        const response = await fetch('/api/create-ankety', {
+// Функции навигации
+function logout() {
+    if (confirm('Вы уверены, что хотите выйти?')) {
+        fetch('/logout', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams(testData),
             credentials: 'include'
+        }).then(() => {
+            localStorage.removeItem('userName');
+            window.location.href = '../index.html';
         });
-        
-        console.log('Тестовый запрос - статус:', response.status);
-        console.log('Тестовый запрос - текст:', await response.text());
-    } catch (error) {
-        console.error('Тестовый запрос - ошибка:', error);
     }
 }
 
-// Экспортируем функции для отладки (необязательно)
+function goToProfile() {
+    window.location.href = 'profile.html';
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('Страница профиля загружена');
+    
+    // Добавляем стили для тегов навыков
+    const style = document.createElement('style');
+    style.textContent = `
+        .skill-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Инициализируем профиль
+    await initializeProfile();
+    
+    // Назначаем обработчики событий
+    document.getElementById('profile-edit-button').onclick = openProfileModal;
+    document.getElementById('profile-edit-form').onsubmit = handleProfileSubmit;
+    document.getElementById('photo-upload-area').onclick = () => document.getElementById('photo-input').click();
+    document.getElementById('photo-input').onchange = (e) => handlePhotoFile(e.target.files[0]);
+    document.getElementById('delete-photo-btn').onclick = deleteCurrentPhoto;
+    
+    // Настраиваем drag & drop
+    setupDragAndDrop();
+    
+    // Обработчики закрытия модального окна
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('profile-edit-modal');
+        const modalContent = document.querySelector('.modal-content');
+        
+        if (modal.style.display === 'flex' && 
+            !modalContent.contains(event.target) && 
+            !event.target.closest('#profile-edit-button') &&
+            !event.target.closest('.profile-avatar-container') &&
+            !event.target.closest('.avatar-overlay')) {
+            closeProfileModal();
+        }
+    });
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeProfileModal();
+        }
+    });
+});
+
+// Экспорт для отладки
 if (typeof window !== 'undefined') {
-    window.testCreateAnketa = testCreateAnketa;
     window.getCurrentAnketa = () => currentAnketa;
-    window.clearLocalStorage = () => {
-        localStorage.removeItem('userProfile');
+    window.clearProfileData = () => {
+        localStorage.removeItem('userName');
         location.reload();
     };
 }

@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мероприятия - Job Finder Pro</title>
+    <title>Мероприятия - </title>
     <link rel="stylesheet" href="../events/events.css">
 </head>
 <body>
     <header>
         <div class="logo">Fsociety</div>
         <nav>
-           <button onclick="location.href='../main/main.html'">Приложения</button>
+            <button onclick="location.href='../main/main.html'">Приложения</button>
             <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
             <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
             <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
             <button onclick="location.href='../events/events.html'" class="active">Мероприятия</button>
+            <button onclick="location.href='../create-event/create-event.html'" class="active">Создать мероприятие</button>
             <button onclick="logout()">Выход</button>
             <span id="welcome-message">Имя пользователя</span>
         </nav>
@@ -24,335 +25,425 @@
         <div class="events-container">
             <div class="events-header">
                 <h1>Мероприятия</h1>
-                <div class="view-toggle">
-                    <button id="list-view-btn" class="active" onclick="switchView('list')">
-                        📋 Список
-                    </button>
-                </div>
+                <p class="events-subtitle">Найдите интересные IT-мероприятия, конференции и встречи</p>
             </div>
 
-            <!-- Контейнер для списка мероприятий -->
-            <div id="events-list-view" class="events-content">
-                <div class="events-layout">
-                    <!-- Левая панель с фильтрами -->
-                    <aside class="events-filters">
-                        <div class="filter-section">
-                            <h3>🔍 Поиск</h3>
-                            <input type="text" id="event-search" placeholder="Название, тематика...">
-                        </div>
+            <div class="events-layout">
+                <!-- Левая панель с фильтрами -->
+                <aside class="events-filters">
+                    <div class="filter-section">
+                        <h3>🔍 Поиск</h3>
+                        <input type="text" id="event-search" placeholder="Название, тематика...">
+                    </div>
 
-                        <div class="filter-section">
-                            <h3>📅 Дата</h3>
-                            <select id="date-filter">
-                                <option value="all">Все даты</option>
-                                <option value="today">Сегодня</option>
-                                <option value="tomorrow">Завтра</option>
-                                <option value="week">На этой неделе</option>
-                                <option value="month">В этом месяце</option>
-                                <option value="upcoming">Предстоящие</option>
-                                <option value="past">Прошедшие</option>
+                    <div class="filter-section">
+                        <h3>📅 Дата</h3>
+                        <select id="date-filter">
+                            <option value="all">Все даты</option>
+                            <option value="today">Сегодня</option>
+                            <option value="tomorrow">Завтра</option>
+                            <option value="week">На этой неделе</option>
+                            <option value="month">В этом месяце</option>
+                            <option value="upcoming">Предстоящие</option>
+                            <option value="past">Прошедшие</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>🎯 Тип мероприятия</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="event-type" value="meetup" checked>
+                                <span>Митапы</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="event-type" value="conference" checked>
+                                <span>Конференции</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="event-type" value="webinar" checked>
+                                <span>Вебинары</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="event-type" value="workshop" checked>
+                                <span>Воркшопы</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="event-type" value="hackathon" checked>
+                                <span>Хакатоны</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="event-type" value="networking" checked>
+                                <span>Нетворкинг</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>🏷️ Тематика</h3>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="frontend" checked>
+                                <span>Frontend</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="backend" checked>
+                                <span>Backend</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="mobile" checked>
+                                <span>Mobile</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="design" checked>
+                                <span>Дизайн</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="data" checked>
+                                <span>Data Science</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="devops" checked>
+                                <span>DevOps</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="ai" checked>
+                                <span>AI/ML</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="topic" value="career" checked>
+                                <span>Карьера</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>📍 Формат</h3>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="format" value="all" checked>
+                                <span>Все форматы</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="format" value="online">
+                                <span>Онлайн</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="format" value="offline">
+                                <span>Офлайн</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="format" value="hybrid">
+                                <span>Гибрид</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3>💰 Стоимость</h3>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="price" value="all" checked>
+                                <span>Все</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="price" value="free">
+                                <span>Бесплатные</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="price" value="paid">
+                                <span>Платные</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="apply-filters-btn" onclick="applyFilters()">Применить фильтры</button>
+                    <button class="reset-filters-btn" onclick="resetFilters()">Сбросить все</button>
+                </aside>
+
+                <!-- Правая часть со списком мероприятий -->
+                <section class="events-list">
+                    <div class="events-stats">
+                        <span>Найдено мероприятий: <strong id="events-count">8</strong></span>
+                        <div class="sort-options">
+                            <select id="sort-events" onchange="sortEvents()">
+                                <option value="date">По дате</option>
+                                <option value="popularity">По популярности</option>
+                                <option value="price_asc">По цене (возр.)</option>
+                                <option value="price_desc">По цене (убыв.)</option>
+                                <option value="name">По названию</option>
                             </select>
                         </div>
-
-                        <div class="filter-section">
-                            <h3>🎯 Тип мероприятия</h3>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="event-type" value="meetup" checked>
-                                    <span>Митапы</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="event-type" value="conference" checked>
-                                    <span>Конференции</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="event-type" value="webinar" checked>
-                                    <span>Вебинары</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="event-type" value="workshop" checked>
-                                    <span>Воркшопы</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="event-type" value="hackathon" checked>
-                                    <span>Хакатоны</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="event-type" value="networking" checked>
-                                    <span>Нетворкинг</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="filter-section">
-                            <h3>🏷️ Тематика</h3>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="frontend" checked>
-                                    <span>Frontend</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="backend" checked>
-                                    <span>Backend</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="mobile" checked>
-                                    <span>Mobile</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="design" checked>
-                                    <span>Дизайн</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="data" checked>
-                                    <span>Data Science</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="devops" checked>
-                                    <span>DevOps</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="ai" checked>
-                                    <span>AI/ML</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="topic" value="career" checked>
-                                    <span>Карьера</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="filter-section">
-                            <h3>📍 Формат</h3>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="format" value="all" checked>
-                                    <span>Все форматы</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="format" value="online">
-                                    <span>Онлайн</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="format" value="offline">
-                                    <span>Офлайн</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="format" value="hybrid">
-                                    <span>Гибрид</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="filter-section">
-                            <h3>💰 Стоимость</h3>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="price" value="all" checked>
-                                    <span>Все</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="price" value="free">
-                                    <span>Бесплатные</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="price" value="paid">
-                                    <span>Платные</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <button class="apply-filters-btn" onclick="applyFilters()">Применить фильтры</button>
-                        <button class="reset-filters-btn" onclick="resetFilters()">Сбросить все</button>
-                    </aside>
-
-                    <!-- Правая часть со списком мероприятий -->
-                    <section class="events-list">
-                        <div class="events-stats">
-                            <span>Найдено мероприятий: <strong id="events-count">8</strong></span>
-                            <div class="sort-options">
-                                <select id="sort-events" onchange="sortEvents()">
-                                    <option value="date">По дате</option>
-                                    <option value="popularity">По популярности</option>
-                                    <option value="price_asc">По цене (возр.)</option>
-                                    <option value="price_desc">По цене (убыв.)</option>
-                                    <option value="name">По названию</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="events-grid">
-                            <!-- Карточка мероприятия 1 -->
-                            <div class="event-card">
-                                <div class="event-header">
-                                    <span class="event-badge online">Онлайн</span>
-                                    <span class="event-badge free">Бесплатно</span>
-                                    <span class="event-badge meetup">Митап</span>
-                                </div>
-                                <div class="event-date">
-                                    <span class="date-day">15</span>
-                                    <span class="date-month">Окт</span>
-                                    <span class="date-time">19:00</span>
-                                </div>
-                                <div class="event-content">
-                                    <h3 class="event-title">React Meetup #42: Next.js 14</h3>
-                                    <p class="event-description">Обсуждение новых возможностей Next.js 14, Server Components и лучших практик.</p>
-                                    <div class="event-topics">
-                                        <span class="topic-tag">Frontend</span>
-                                        <span class="topic-tag">React</span>
-                                        <span class="topic-tag">Next.js</span>
-                                    </div>
-                                    <div class="event-meta">
-                                        <span class="meta-item">👥 120 участников</span>
-                                        <span class="meta-item">⏱️ 2 часа</span>
-                                    </div>
-                                    <div class="event-actions">
-                                        <button class="btn-primary" onclick="registerEvent(1)">Зарегистрироваться</button>
-                                        <button class="btn-outline" onclick="viewEvent(1)">Подробнее</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Карточка мероприятия 2 -->
-                            <div class="event-card">
-                                <div class="event-header">
-                                    <span class="event-badge offline">Офлайн</span>
-                                    <span class="event-badge paid">5000 ₽</span>
-                                    <span class="event-badge conference">Конференция</span>
-                                </div>
-                                <div class="event-date">
-                                    <span class="date-day">18</span>
-                                    <span class="date-month">Окт</span>
-                                    <span class="date-time">10:00</span>
-                                </div>
-                                <div class="event-content">
-                                    <h3 class="event-title">DevOps Days Moscow 2023</h3>
-                                    <p class="event-description">Крупнейшая конференция по DevOps в России с участием международных экспертов.</p>
-                                    <div class="event-topics">
-                                        <span class="topic-tag">DevOps</span>
-                                        <span class="topic-tag">Kubernetes</span>
-                                        <span class="topic-tag">CI/CD</span>
-                                        <span class="topic-tag">Cloud</span>
-                                    </div>
-                                    <div class="event-meta">
-                                        <span class="meta-item">👥 500+ участников</span>
-                                        <span class="meta-item">⏱️ 2 дня</span>
-                                        <span class="meta-item">📍 Москва</span>
-                                    </div>
-                                    <div class="event-actions">
-                                        <button class="btn-primary" onclick="registerEvent(2)">Купить билет</button>
-                                        <button class="btn-outline" onclick="viewEvent(2)">Программа</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Карточка мероприятия 3 -->
-                            <div class="event-card">
-                                <div class="event-header">
-                                    <span class="event-badge hybrid">Гибрид</span>
-                                    <span class="event-badge free">Бесплатно</span>
-                                    <span class="event-badge webinar">Вебинар</span>
-                                </div>
-                                <div class="event-date">
-                                    <span class="date-day">20</span>
-                                    <span class="date-month">Окт</span>
-                                    <span class="date-time">15:00</span>
-                                </div>
-                                <div class="event-content">
-                                    <h3 class="event-title">Введение в Machine Learning</h3>
-                                    <p class="event-description">Практический вебинар по основам машинного обучения для разработчиков.</p>
-                                    <div class="event-topics">
-                                        <span class="topic-tag">AI/ML</span>
-                                        <span class="topic-tag">Python</span>
-                                        <span class="topic-tag">Data Science</span>
-                                    </div>
-                                    <div class="event-meta">
-                                        <span class="meta-item">👥 250 участников</span>
-                                        <span class="meta-item">⏱️ 3 часа</span>
-                                        <span class="meta-item">🎓 Для начинающих</span>
-                                    </div>
-                                    <div class="event-actions">
-                                        <button class="btn-primary" onclick="registerEvent(3)">Зарегистрироваться</button>
-                                        <button class="btn-outline" onclick="viewEvent(3)">Материалы</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Карточка мероприятия 4 -->
-                            <div class="event-card">
-                                <div class="event-header">
-                                    <span class="event-badge online">Онлайн</span>
-                                    <span class="event-badge paid">1500 ₽</span>
-                                    <span class="event-badge workshop">Воркшоп</span>
-                                </div>
-                                <div class="event-date">
-                                    <span class="date-day">22</span>
-                                    <span class="date-month">Окт</span>
-                                    <span class="date-time">11:00</span>
-                                </div>
-                                <div class="event-content">
-                                    <h3 class="event-title">UI/UX Design Workshop</h3>
-                                    <p class="event-description">Практический воркшоп по созданию пользовательских интерфейсов в Figma.</p>
-                                    <div class="event-topics">
-                                        <span class="topic-tag">Дизайн</span>
-                                        <span class="topic-tag">Figma</span>
-                                        <span class="topic-tag">UI/UX</span>
-                                    </div>
-                                    <div class="event-meta">
-                                        <span class="meta-item">👥 30 участников</span>
-                                        <span class="meta-item">⏱️ 4 часа</span>
-                                        <span class="meta-item">🛠️ Практика</span>
-                                    </div>
-                                    <div class="event-actions">
-                                        <button class="btn-primary" onclick="registerEvent(4)">Записаться</button>
-                                        <button class="btn-outline" onclick="viewEvent(4)">Портфолио</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="pagination">
-                            <button class="page-btn active">1</button>
-                            <button class="page-btn">2</button>
-                            <button class="page-btn">3</button>
-                            <span class="page-dots">...</span>
-                            <button class="page-btn">5</button>
-                            <button class="next-btn">→</button>
-                        </div>
-                    </section>
-                </div>
-            </div>
-
-            <!-- Контейнер для календаря -->
-            <div id="events-calendar-view" class="events-content hidden">
-                <div class="calendar-container">
-                    <div class="calendar-header">
-                        <button class="nav-btn" onclick="prevMonth()">←</button>
-                        <h2 id="current-month">Октябрь 2023</h2>
-                        <button class="nav-btn" onclick="nextMonth()">→</button>
                     </div>
 
-                    <div class="calendar-weekdays">
-                        <div class="weekday">Пн</div>
-                        <div class="weekday">Вт</div>
-                        <div class="weekday">Ср</div>
-                        <div class="weekday">Чт</div>
-                        <div class="weekday">Пт</div>
-                        <div class="weekday">Сб</div>
-                        <div class="weekday">Вс</div>
-                    </div>
+                    <div class="events-grid">
+                        <!-- Карточка мероприятия 1 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge online">Онлайн</span>
+                                <span class="event-badge free">Бесплатно</span>
+                                <span class="event-badge meetup">Митап</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">15</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">19:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">React Meetup #42: Next.js 14</h3>
+                                <p class="event-description">Обсуждение новых возможностей Next.js 14, Server Components и лучших практик.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">Frontend</span>
+                                    <span class="topic-tag">React</span>
+                                    <span class="topic-tag">Next.js</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 120 участников</span>
+                                    <span class="meta-item">⏱️ 2 часа</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(1)">Зарегистрироваться</button>
+                                    <button class="btn-outline" onclick="viewEvent(1)">Подробнее</button>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="calendar-days" id="calendar-days">
-                        <!-- Дни будут заполнены JavaScript -->
-                    </div>
+                        <!-- Карточка мероприятия 2 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge offline">Офлайн</span>
+                                <span class="event-badge paid">5000 ₽</span>
+                                <span class="event-badge conference">Конференция</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">18</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">10:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">DevOps Days Moscow 2023</h3>
+                                <p class="event-description">Крупнейшая конференция по DevOps в России с участием международных экспертов.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">DevOps</span>
+                                    <span class="topic-tag">Kubernetes</span>
+                                    <span class="topic-tag">CI/CD</span>
+                                    <span class="topic-tag">Cloud</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 500+ участников</span>
+                                    <span class="meta-item">⏱️ 2 дня</span>
+                                    <span class="meta-item">📍 Москва</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(2)">Купить билет</button>
+                                    <button class="btn-outline" onclick="viewEvent(2)">Программа</button>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="calendar-events-preview" id="events-preview">
-                        <h3>Мероприятия на <span id="selected-date">...</span></h3>
-                        <div id="day-events">
-                            <p class="no-events">Выберите дату для просмотра мероприятий</p>
+                        <!-- Карточка мероприятия 3 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge hybrid">Гибрид</span>
+                                <span class="event-badge free">Бесплатно</span>
+                                <span class="event-badge webinar">Вебинар</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">20</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">15:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">Введение в Machine Learning</h3>
+                                <p class="event-description">Практический вебинар по основам машинного обучения для разработчиков.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">AI/ML</span>
+                                    <span class="topic-tag">Python</span>
+                                    <span class="topic-tag">Data Science</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 250 участников</span>
+                                    <span class="meta-item">⏱️ 3 часа</span>
+                                    <span class="meta-item">🎓 Для начинающих</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(3)">Зарегистрироваться</button>
+                                    <button class="btn-outline" onclick="viewEvent(3)">Материалы</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Карточка мероприятия 4 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge online">Онлайн</span>
+                                <span class="event-badge paid">1500 ₽</span>
+                                <span class="event-badge workshop">Воркшоп</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">22</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">11:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">UI/UX Design Workshop</h3>
+                                <p class="event-description">Практический воркшоп по созданию пользовательских интерфейсов в Figma.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">Дизайн</span>
+                                    <span class="topic-tag">Figma</span>
+                                    <span class="topic-tag">UI/UX</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 30 участников</span>
+                                    <span class="meta-item">⏱️ 4 часа</span>
+                                    <span class="meta-item">🛠️ Практика</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(4)">Записаться</button>
+                                    <button class="btn-outline" onclick="viewEvent(4)">Портфолио</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Карточка мероприятия 5 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge offline">Офлайн</span>
+                                <span class="event-badge free">Бесплатно</span>
+                                <span class="event-badge hackathon">Хакатон</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">25</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">18:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">Хакатон: FinTech Challenge</h3>
+                                <p class="event-description">48-часовой хакатон по разработке финтех-решений с призовым фондом.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">FinTech</span>
+                                    <span class="topic-tag">Blockchain</span>
+                                    <span class="topic-tag">Mobile</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 100 участников</span>
+                                    <span class="meta-item">⏱️ 48 часов</span>
+                                    <span class="meta-item">📍 Санкт-Петербург</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(5)">Зарегистрироваться</button>
+                                    <button class="btn-outline" onclick="viewEvent(5)">Условия</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Карточка мероприятия 6 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge offline">Офлайн</span>
+                                <span class="event-badge paid">1000 ₽</span>
+                                <span class="event-badge networking">Нетворкинг</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">28</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">19:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">Нетворкинг для IT-специалистов</h3>
+                                <p class="event-description">Вечер нетворкинга для разработчиков, дизайнеров и менеджеров проектов.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">Карьера</span>
+                                    <span class="topic-tag">Networking</span>
+                                    <span class="topic-tag">IT</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 50 участников</span>
+                                    <span class="meta-item">⏱️ 3 часа</span>
+                                    <span class="meta-item">📍 Москва</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(6)">Купить билет</button>
+                                    <button class="btn-outline" onclick="viewEvent(6)">Расписание</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Карточка мероприятия 7 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge online">Онлайн</span>
+                                <span class="event-badge free">Бесплатно</span>
+                                <span class="event-badge webinar">Вебинар</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">30</span>
+                                <span class="date-month">Окт</span>
+                                <span class="date-time">14:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">Как стать Senior Developer</h3>
+                                <p class="event-description">Карьерные пути и навыки для перехода на уровень Senior разработчика.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">Карьера</span>
+                                    <span class="topic-tag">Развитие</span>
+                                    <span class="topic-tag">Soft Skills</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 300 участников</span>
+                                    <span class="meta-item">⏱️ 1.5 часа</span>
+                                    <span class="meta-item">🎓 Для всех уровней</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(7)">Зарегистрироваться</button>
+                                    <button class="btn-outline" onclick="viewEvent(7)">Спикеры</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Карточка мероприятия 8 -->
+                        <div class="event-card">
+                            <div class="event-header">
+                                <span class="event-badge hybrid">Гибрид</span>
+                                <span class="event-badge paid">2000 ₽</span>
+                                <span class="event-badge workshop">Воркшоп</span>
+                            </div>
+                            <div class="event-date">
+                                <span class="date-day">2</span>
+                                <span class="date-month">Ноя</span>
+                                <span class="date-time">12:00</span>
+                            </div>
+                            <div class="event-content">
+                                <h3 class="event-title">Kubernetes для начинающих</h3>
+                                <p class="event-description">Практический воркшоп по развертыванию приложений в Kubernetes.</p>
+                                <div class="event-topics">
+                                    <span class="topic-tag">Kubernetes</span>
+                                    <span class="topic-tag">DevOps</span>
+                                    <span class="topic-tag">Docker</span>
+                                    <span class="topic-tag">Cloud</span>
+                                </div>
+                                <div class="event-meta">
+                                    <span class="meta-item">👥 25 участников</span>
+                                    <span class="meta-item">⏱️ 5 часов</span>
+                                    <span class="meta-item">🛠️ Практика</span>
+                                </div>
+                                <div class="event-actions">
+                                    <button class="btn-primary" onclick="registerEvent(8)">Записаться</button>
+                                    <button class="btn-outline" onclick="viewEvent(8)">Программа</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    <div class="pagination">
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <span class="page-dots">...</span>
+                        <button class="page-btn">5</button>
+                        <button class="next-btn">→</button>
+                    </div>
+                </section>
             </div>
         </div>
     </main>

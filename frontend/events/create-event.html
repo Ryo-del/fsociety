@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать мероприятие - </title>
+    <link rel="stylesheet" href="../create-event/create-event.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Fsociety</div>
+        <nav>
+            <button onclick="location.href='../main/main.html'">Приложения</button>
+            <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
+            <button onclick="location.href='../events/events.html'" class="active">Мероприятия</button>
+            <button onclick="location.href='create-event.html'" class="active">Создать мероприятие</button>
+            <button onclick="logout()">Выход</button>
+            <span id="welcome-message">Имя пользователя</span>
+        </nav>
+    </header>
+
+    <main>
+        <div class="create-event-container">
+            <div class="create-event-header">
+                <h1>Создать мероприятие</h1>
+                <p class="create-event-subtitle">Организуйте IT-мероприятие, конференцию или митап</p>
+            </div>
+
+            <form id="create-event-form">
+                <div class="form-section">
+                    <h2>Основная информация</h2>
+                    
+                    <div class="form-group">
+                        <label for="event-title">Название мероприятия *</label>
+                        <input type="text" id="event-title" name="title" placeholder="Например: React Meetup #42" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-type">Тип мероприятия *</label>
+                            <select id="event-type" name="type" required>
+                                <option value="">Выберите тип</option>
+                                <option value="meetup">Митап</option>
+                                <option value="conference">Конференция</option>
+                                <option value="webinar">Вебинар</option>
+                                <option value="workshop">Воркшоп</option>
+                                <option value="hackathon">Хакатон</option>
+                                <option value="networking">Нетворкинг</option>
+                                <option value="training">Тренинг</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-format">Формат проведения *</label>
+                            <select id="event-format" name="format" required>
+                                <option value="">Выберите формат</option>
+                                <option value="online">Онлайн</option>
+                                <option value="offline">Офлайн</option>
+                                <option value="hybrid">Гибрид</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-description">Описание мероприятия *</label>
+                        <textarea id="event-description" name="description" rows="4" placeholder="Подробное описание мероприятия, темы выступлений, программа..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Дата и время</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-date">Дата проведения *</label>
+                            <input type="date" id="event-date" name="date" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-time">Время начала *</label>
+                            <input type="time" id="event-time" name="time" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-duration">Длительность *</label>
+                            <select id="event-duration" name="duration" required>
+                                <option value="">Выберите длительность</option>
+                                <option value="1">1 час</option>
+                                <option value="2">2 часа</option>
+                                <option value="3">3 часа</option>
+                                <option value="4">4 часа</option>
+                                <option value="5">5+ часов</option>
+                                <option value="full-day">Целый день</option>
+                                <option value="multi-day">Несколько дней</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Место проведения</h2>
+                    
+                    <div id="location-fields">
+                        <div class="form-group">
+                            <label for="event-location">Место проведения *</label>
+                            <input type="text" id="event-location" name="location" placeholder="Адрес или ссылка для онлайн-мероприятия" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-city">Город</label>
+                            <input type="text" id="event-city" name="city" placeholder="Например: Москва">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-map-link">Ссылка на карту</label>
+                            <input type="url" id="event-map-link" name="map_link" placeholder="https://maps.google.com/...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Стоимость и регистрация</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-price-type">Тип стоимости *</label>
+                            <select id="event-price-type" name="price_type" required onchange="togglePriceFields()">
+                                <option value="">Выберите тип</option>
+                                <option value="free">Бесплатно</option>
+                                <option value="paid">Платно</option>
+                                <option value="donation">По donation</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="price-amount-group" style="display: none;">
+                            <label for="event-price">Стоимость (₽) *</label>
+                            <input type="number" id="event-price" name="price" min="0" placeholder="Например: 1500">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-max-participants">Макс. участников</label>
+                            <input type="number" id="event-max-participants" name="max_participants" min="1" placeholder="Например: 100">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-registration-link">Ссылка для регистрации</label>
+                        <input type="url" id="event-registration-link" name="registration_link" placeholder="https://forms.google.com/...">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Темы и теги</h2>
+                    
+                    <div class="form-group">
+                        <label>Выберите темы *</label>
+                        <div class="tags-container">
+                            <div class="tags-grid">
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="frontend">
+                                    <span>Frontend</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="backend">
+                                    <span>Backend</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="mobile">
+                                    <span>Mobile</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="design">
+                                    <span>Дизайн</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="data">
+                                    <span>Data Science</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="devops">
+                                    <span>DevOps</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="ai">
+                                    <span>AI/ML</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="blockchain">
+                                    <span>Blockchain</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="cybersecurity">
+                                    <span>Кибербезопасность</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="cloud">
+                                    <span>Cloud</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="career">
+                                    <span>Карьера</span>
+                                </label>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="topics" value="startup">
+                                    <span>Стартапы</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-custom-tags">Дополнительные теги (через запятую)</label>
+                        <input type="text" id="event-custom-tags" name="custom_tags" placeholder="JavaScript, React, Python, Docker...">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Контакты и организатор</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-organizer">Организатор *</label>
+                            <input type="text" id="event-organizer" name="organizer" placeholder="Название компании или сообщества" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="event-organizer-email">Email организатора *</label>
+                            <input type="email" id="event-organizer-email" name="organizer_email" placeholder="contact@example.com" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-contact-phone">Телефон для связи</label>
+                        <input type="tel" id="event-contact-phone" name="contact_phone" placeholder="+7 (999) 123-45-67">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-website">Веб-сайт</label>
+                        <input type="url" id="event-website" name="website" placeholder="https://example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-social-links">Социальные сети</label>
+                        <div class="social-links">
+                            <input type="url" placeholder="Telegram" name="telegram">
+                            <input type="url" placeholder="VK" name="vk">
+                            <input type="url" placeholder="Instagram" name="instagram">
+                            <input type="url" placeholder="Twitter" name="twitter">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Дополнительная информация</h2>
+                    
+                    <div class="form-group">
+                        <label for="event-level">Уровень мероприятия</label>
+                        <select id="event-level" name="level">
+                            <option value="">Любой уровень</option>
+                            <option value="beginner">Для начинающих</option>
+                            <option value="intermediate">Для продолжающих</option>
+                            <option value="advanced">Для продвинутых</option>
+                            <option value="expert">Для экспертов</option>
+                            <option value="all">Для всех уровней</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-language">Язык мероприятия</label>
+                        <select id="event-language" name="language">
+                            <option value="russian">Русский</option>
+                            <option value="english">Английский</option>
+                            <option value="mixed">Смешанный</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-prerequisites">Что нужно знать участникам</label>
+                        <textarea id="event-prerequisites" name="prerequisites" rows="3" placeholder="Базовые знания JavaScript, опыт работы с React..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-materials">Будут ли раздаточные материалы?</label>
+                        <select id="event-materials" name="materials">
+                            <option value="">Выберите вариант</option>
+                            <option value="yes">Да, будут материалы</option>
+                            <option value="no">Нет, без материалов</option>
+                            <option value="online">Только онлайн-материалы</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">Опубликовать мероприятие</button>
+                    <button type="button" class="btn-preview" onclick="previewEvent()">Предпросмотр</button>
+                    <button type="button" class="btn-save-draft" onclick="saveAsDraft()">Сохранить черновик</button>
+                    <button type="button" class="btn-cancel" onclick="cancelCreation()">Отмена</button>
+                </div>
+
+                <div class="form-message" id="form-message"></div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Модальное окно предпросмотра -->
+    <div id="preview-modal" class="modal hidden">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePreview()">×</button>
+            <h2>Предпросмотр мероприятия</h2>
+            <div id="preview-content">
+                <!-- Контент предпросмотра будет здесь -->
+            </div>
+            <div class="preview-actions">
+                <button class="btn-primary" onclick="submitForm()">Опубликовать</button>
+                <button class="btn-outline" onclick="closePreview()">Вернуться к редактированию</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="create-event.js"></script>
+</body>
+</html>

@@ -7,284 +7,8 @@
     <link rel="stylesheet" href="../main/main.css">
     <!-- Подключаем Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Подключаем стили из myjob.css для модального окна -->
-    <link rel="stylesheet" href="../myjob/myjob.css">
-    <style>
-        /* Специфичные стили для профиля */
-        .profile-avatar-container {
-            position: relative;
-            display: inline-block;
-            margin: 0 auto 25px;
-        }
-        
-        .profile-avatar {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            border: 4px solid #667eea;
-            object-fit: cover;
-            transition: opacity 0.3s ease;
-        }
-        
-        .profile-avatar:hover {
-            opacity: 0.9;
-        }
-        
-        .avatar-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .avatar-overlay:hover {
-            opacity: 1;
-        }
-        
-        .avatar-overlay i {
-            color: white;
-            font-size: 2em;
-        }
-        
-        .profile-name {
-            color: #4b6cb7;
-            font-size: 2em;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .profile-bio {
-            color: #6c757d;
-            font-size: 1.1em;
-            line-height: 1.6;
-            max-width: 400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        
-        .profile-info-item {
-            margin: 5px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #6c757d;
-        }
-        
-        .profile-card {
-            text-align: center;
-            padding: 40px 20px;
-        }
-        
-        /* Стили для формы в модальном окне профиля */
-        #profile-edit-form .form-group {
-            margin-bottom: 20px;
-        }
-        
-        #profile-edit-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        #profile-edit-form input,
-        #profile-edit-form select,
-        #profile-edit-form textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e5eb;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-        
-        #profile-edit-form input:focus,
-        #profile-edit-form select:focus,
-        #profile-edit-form textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        #profile-edit-form select {
-            cursor: pointer;
-        }
-        
-        /* Стили для загрузки фото */
-        .photo-upload-container {
-            margin-bottom: 20px;
-        }
-        
-        .photo-upload-area {
-            border: 2px dashed #667eea;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: #f8f9fa;
-        }
-        
-        .photo-upload-area:hover {
-            background-color: #e9ecef;
-            border-color: #4b6cb7;
-        }
-        
-        .photo-upload-area i {
-            font-size: 3em;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .photo-upload-area p {
-            margin: 5px 0;
-            color: #6c757d;
-        }
-        
-        .photo-upload-area small {
-            color: #999;
-        }
-        
-        #photo-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #ddd;
-            margin-top: 15px;
-            display: none;
-        }
-        
-        .current-photo-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        .current-photo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .form-row .form-group {
-            flex: 1;
-        }
-        
-        .profile-modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .profile-modal-buttons button {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1em;
-        }
-        
-        .profile-modal-buttons button.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .profile-modal-buttons button.secondary {
-            background-color: #f8f9fa;
-            color: #495057;
-            border: 2px solid #e1e5eb;
-        }
-        
-        .profile-modal-buttons button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        /* Кнопка удаления фото */
-        .delete-photo-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .delete-photo-btn:hover {
-            background-color: #c82333;
-        }
-        
-        /* Сообщения */
-        .form-message {
-            padding: 12px 20px;
-            margin: 15px 0;
-            border-radius: 8px;
-            font-weight: 600;
-            text-align: center;
-        }
-        
-        .form-message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .form-message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .form-message.info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .form-message.warning {
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-            
-            .profile-avatar {
-                width: 150px;
-                height: 150px;
-            }
-        }
-    </style>
+    <!-- Подключаем стили для профиля -->
+    <link rel="stylesheet" href="Profile.css">
 </head>
 <body>
     <header>
@@ -300,48 +24,61 @@
     </header>
 
     <main>
-        <div class="form-container" style="max-width: 600px; margin: 40px auto;">
-            <h2>Мой профиль</h2>
-            
-            <div class="profile-card" style="text-align: center; padding: 40px 20px;">
-                <!-- Фото профиля -->
-                <div class="profile-avatar-container">
-                    <img src="https://avatars.githubusercontent.com/u/583231?v=4" 
-                         alt="Фото профиля" 
-                         class="profile-avatar"
-                         id="profile-avatar-display"
-                         onclick="openProfileModal()">
-                    <div class="avatar-overlay" onclick="openProfileModal()">
-                        <i class="fas fa-camera"></i>
+        <div class="profile-container">
+            <div class="profile-header">
+                <!-- Аватарка и основная информация -->
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-wrapper">
+                        <img src="https://avatars.githubusercontent.com/u/583231?v=4" 
+                             alt="Фото профиля" 
+                             class="profile-avatar"
+                             id="profile-avatar-display"
+                             onclick="openProfileModal()">
+                        <div class="avatar-overlay" onclick="openProfileModal()">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="primary" id="profile-edit-button">
+                            <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i> Загрузка...
+                        </button>
                     </div>
                 </div>
                 
-                <!-- Ник пользователя -->
-                <h1 class="profile-name" id="profile-name-display">
-                    octocat
-                </h1>
-                
-                <!-- Описание/биография -->
-                <div class="profile-bio" id="profile-bio-display">
-                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
-                </div>
-                
-                <!-- Дополнительная информация -->
-                <div id="profile-info-display" style="margin-top: 20px;"></div>
-
-                <!-- Кнопка редактирования -->
-                <div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">
-                    <button class="toggle-btn" id="profile-edit-button" 
-                            style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1em; width: auto; min-width: 200px;">
-                        <i class="fas fa-pencil-alt" style="margin-right: 8px;"></i> Редактировать профиль
-                    </button>
+                <!-- Детальная информация профиля -->
+                <div class="profile-info-section">
+                    <h1 class="profile-name" id="profile-name-display">
+                        Загрузка...
+                    </h1>
+                    
+                    <div class="profile-badge" id="profile-job-display">
+                        <i class="fas fa-briefcase" style="margin-right: 5px;"></i> Загрузка...
+                    </div>
+                    
+                    <!-- Статистика профиля -->
+                    <div class="profile-stats" id="profile-stats-display">
+                        <!-- Заполняется JavaScript -->
+                    </div>
+                    
+                    <!-- Описание -->
+                    <div class="profile-description">
+                        <h3>О себе</h3>
+                        <p id="profile-description-display">Загрузка информации...</p>
+                    </div>
+                    
+                    <!-- Навыки -->
+                    <div class="profile-description" style="margin-top: 20px;" id="profile-skills-container">
+                        <h3>Навыки</h3>
+                        <div id="profile-skills-display">Загрузка...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- Модальное окно для редактирования профиля -->
-    <div id="profile-edit-modal" class="edit-modal" style="display: none;">
+    <div id="profile-edit-modal" class="edit-modal">
         <div class="modal-overlay" onclick="closeProfileModal()"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -362,8 +99,8 @@
                     <div class="photo-upload-area" id="photo-upload-area">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <p>Нажмите или перетащите фото для загрузки</p>
-                        <small>Поддерживаемые форматы: JPG, PNG, GIF (макс. 10MB)</small>
-                        <input type="file" id="photo-input" accept="image/jpeg,image/png,image/gif" style="display: none;">
+                        <small>Любой размер, автоматически обрежется и сожмется</small>
+                        <input type="file" id="photo-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
                         <img id="photo-preview" alt="Превью фото">
                     </div>
                 </div>
@@ -371,21 +108,22 @@
                 <form id="profile-edit-form">
                     <input type="hidden" id="profile-id" name="id">
                     
+                    <!-- Основная информация -->
                     <div class="form-group">
-                        <label for="profile-name">Имя</label>
+                        <label for="profile-name">Имя *</label>
                         <input type="text" id="profile-name" name="name" required 
-                               placeholder="Введите ваше имя">
+                               placeholder="Введите ваше полное имя">
                     </div>
                     
-                    <div class="form-row">
+                    <div class="form-grid">
                         <div class="form-group">
-                            <label for="profile-age">Возраст</label>
+                            <label for="profile-age">Возраст *</label>
                             <input type="number" id="profile-age" name="age" required 
                                    min="16" max="100" placeholder="25">
                         </div>
                         
                         <div class="form-group">
-                            <label for="profile-gender">Пол</label>
+                            <label for="profile-gender">Пол *</label>
                             <select id="profile-gender" name="gender" required>
                                 <option value="">Выберите пол</option>
                                 <option value="мужской">Мужской</option>
@@ -395,34 +133,86 @@
                         </div>
                     </div>
                     
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="profile-city">Город</label>
+                            <input type="text" id="profile-city" name="city" 
+                                   placeholder="Например: Москва, Санкт-Петербург">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profile-position">Должность</label>
+                            <input type="text" id="profile-position" name="position" 
+                                   placeholder="Например: Senior Developer, Team Lead">
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
-                        <label for="profile-job">Профессия/Должность</label>
+                        <label for="profile-job">Профессия *</label>
                         <input type="text" id="profile-job" name="job" required 
-                               placeholder="Например: Разработчик, Дизайнер, Менеджер">
+                               placeholder="Например: Frontend Developer, UX Designer, Project Manager">
                     </div>
                     
                     <div class="form-group">
-                        <label for="profile-school">Образование</label>
+                        <label for="profile-school">Образование *</label>
                         <input type="text" id="profile-school" name="school" required 
-                               placeholder="Например: МГУ, КубГУ, Bootcamp">
+                               placeholder="Например: МГУ, КубГУ, Яндекс.Практикум">
                     </div>
                     
                     <div class="form-group">
-                        <label for="profile-skills">Навыки (через запятую)</label>
+                        <label for="profile-skills">Навыки * (через запятую)</label>
                         <input type="text" id="profile-skills" name="skills" required 
-                               placeholder="Например: JavaScript, React, Go, Docker">
+                               placeholder="Например: JavaScript, React, Go, Docker, UI/UX Design">
+                    </div>
+                    
+                    <!-- Дополнительная информация -->
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="profile-experience">Опыт работы</label>
+                            <select id="profile-experience" name="experience">
+                                <option value="">Не указано</option>
+                                <option value="нет опыта">Нет опыта</option>
+                                <option value="до 1 года">До 1 года</option>
+                                <option value="1-3 года">1-3 года</option>
+                                <option value="3-5 лет">3-5 лет</option>
+                                <option value="более 5 лет">Более 5 лет</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="profile-jobtype">Тип работы</label>
+                            <select id="profile-jobtype" name="jobtype">
+                                <option value="">Не указано</option>
+                                <option value="полный день">Полный день</option>
+                                <option value="неполный день">Неполный день</option>
+                                <option value="удаленная работа">Удаленная работа</option>
+                                <option value="фриланс">Фриланс</option>
+                                <option value="стажировка">Стажировка</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="profile-salary">Зарплатные ожидания</label>
+                        <input type="text" id="profile-salary" name="salary" 
+                               placeholder="Например: от 150 000 руб.">
                     </div>
                     
                     <div class="form-group">
                         <label for="profile-description">О себе (дополнительно)</label>
                         <textarea id="profile-description" name="description" 
-                                  placeholder="Расскажите немного о себе, своих интересах, опыте..."
-                                  rows="4"></textarea>
+                                  placeholder="Расскажите о своем опыте, интересах, целях..."
+                                  rows="5"></textarea>
                     </div>
                     
-                    <div class="profile-modal-buttons">
+                    <div class="form-message info">
+                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                        Поля, отмеченные *, обязательны для заполнения
+                    </div>
+                    
+                    <div class="modal-buttons">
                         <button type="submit" class="primary" id="profile-save-button">
-                            <i class="fas fa-save" style="margin-right: 8px;"></i> Сохранить
+                            <i class="fas fa-save" style="margin-right: 8px;"></i> Сохранить профиль
                         </button>
                         <button type="button" class="secondary" onclick="closeProfileModal()">
                             <i class="fas fa-times" style="margin-right: 8px;"></i> Отмена

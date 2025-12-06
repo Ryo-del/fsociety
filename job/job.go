@@ -24,6 +24,7 @@ type Job struct {
 	Location    string `json:"location,omitempty"`
 	Experience  string `json:"experience,omitempty"`
 	JobType     string `json:"job_type,omitempty"`
+	Telegram    string `json:"telegram,omitempty"`
 }
 
 var db string = "job.json"
@@ -104,6 +105,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 			jobs[i].Description = r.FormValue("description")
 			jobs[i].Salary = r.FormValue("salary")
 			jobs[i].Skills = r.FormValue("skills")
+			jobs[i].Telegram = r.FormValue("telegram")
 
 			updated = true
 			break
@@ -170,6 +172,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Location:    r.FormValue("location"),
 		Experience:  r.FormValue("experience"),
 		JobType:     r.FormValue("job_type"),
+		Telegram:    r.FormValue("telegram"),
 	}
 
 	// 5. Добавляем новую вакансию в список

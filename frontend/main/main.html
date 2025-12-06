@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вакансии - Job Finder Pro</title>
+    <title>Вакансии - Fsociety</title>
     <link rel="stylesheet" href="main.css">
+
 </head>
 <body>
     <header>
-        <div class="logo">Job Finder Pro</div>
+        <div class="logo">Fsociety</div>
         <nav>
             <button onclick="location.href='../main/main.html'">Хочу работать</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти работника</button>
             <button onclick="location.href='../create/create.html'">Создать вакансию</button>
             <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
+            
             <button onclick="logout()">Выход</button>
-            <span id="welcome-message" style="display: none;"></span>
+            <span id="welcome-message" style="display: none; cursor: pointer;" onclick="goToProfile()"></span>
         </nav>
     </header>
 
@@ -40,68 +43,9 @@
                 </select>
             </div>
             <div id="jobs-list">
-                <!-- Пример карточек вакансий -->
-                <div class="job-card">
-                    <div class="job-card-header">
-                        <h3>Frontend Разработчик</h3>
-                        <span class="job-type">Полная занятость</span>
-                    </div>
-                    <div class="job-card-company">TechCorp Inc.</div>
-                    <div class="job-card-salary">150,000 - 200,000 ₽</div>
-                    <div class="job-card-skills">
-                        <span class="skill-tag">HTML</span>
-                        <span class="skill-tag">CSS</span>
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">React</span>
-                    </div>
-                    <p class="job-description">Ищем опытного Frontend разработчика для работы над современными веб-приложениями...</p>
-                    <div class="job-card-footer">
-                        <span class="job-location">Москва</span>
-                        <span class="job-date">2 дня назад</span>
-                    </div>
-                </div>
-
-                <div class="job-card">
-                    <div class="job-card-header">
-                        <h3>Backend Разработчик (Python)</h3>
-                        <span class="job-type">Удалённая работа</span>
-                    </div>
-                    <div class="job-card-company">DataSystems</div>
-                    <div class="job-card-salary">180,000 - 220,000 ₽</div>
-                    <div class="job-card-skills">
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">Django</span>
-                        <span class="skill-tag">PostgreSQL</span>
-                        <span class="skill-tag">Docker</span>
-                    </div>
-                    <p class="job-description">Требуется Backend разработчик для создания масштабируемых API...</p>
-                    <div class="job-card-footer">
-                        <span class="job-location">Удалённо</span>
-                        <span class="job-date">5 дней назад</span>
-                    </div>
-                </div>
-
-                <div class="job-card">
-                    <div class="job-card-header">
-                        <h3>UX/UI Дизайнер</h3>
-                        <span class="job-type">Частичная занятость</span>
-                    </div>
-                    <div class="job-card-company">Creative Agency</div>
-                    <div class="job-card-salary">80,000 - 120,000 ₽</div>
-                    <div class="job-card-skills">
-                        <span class="skill-tag">Figma</span>
-                        <span class="skill-tag">Adobe XD</span>
-                        <span class="skill-tag">Photoshop</span>
-                        <span class="skill-tag">UI Design</span>
-                    </div>
-                    <p class="job-description">Ищем талантливого дизайнера для работы над интерфейсами мобильных приложений...</p>
-                    <div class="job-card-footer">
-                        <span class="job-location">Санкт-Петербург</span>
-                        <span class="job-date">1 неделю назад</span>
-                    </div>
-                </div>
+                <!-- Вакансии будут загружаться динамически из JavaScript -->
             </div>
-            <p class="form-message info">Найдено 3 вакансии</p>
+            <p class="form-message info">Загрузка вакансий...</p>
         </div>
     </main>
 

@@ -248,8 +248,8 @@ main {
 
 .status-active {
     background-color: #d4edda;
-    color: #00ff3c;
-}
+    color: #ffffff;
+} /* Е */
 
 .status-draft {
     background-color: #fff3cd;

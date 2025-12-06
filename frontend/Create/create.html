@@ -8,9 +8,10 @@
 </head>
 <body>
     <header>
-        <div class="logo">Job Finder Pro</div>
+        <div class="logo">Fsociety</div>
         <nav>
             <button onclick="location.href='../main/main.html'">Хочу работать</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти работника</button>
             <button onclick="location.href='../create/create.html'">Создать вакансию</button>
             <button onclick="location.href='../myjob/myjob.html'">Мои вакансии</button>
             <button onclick="logout()">Выход</button>
@@ -30,6 +31,7 @@
                 <input type="text" name="skills" placeholder="Требуемые навыки (через запятую)" required>
                 <input type="text" name="location" placeholder="Местоположение">
                 <input type="text" name="experience" placeholder="Требуемый опыт">
+                <input type="text" name="telegram" placeholder="Telegram" required> <!-- Изменил name с tg на telegram -->
                 <select name="job_type">
                     <option value="" disabled selected>Тип занятости</option>
                     <option value="full">Полная занятость</option>

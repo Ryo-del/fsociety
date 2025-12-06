@@ -100,7 +100,7 @@ body {
 
 .input-group input {
     width: 100%;
-    padding: 14px 15px 14px 45px;
+    padding: 14px 45px 14px 45px; /* Добавлен правый padding для иконки глаза */
     border: 2px solid #e1e5ee;
     border-radius: 10px;
     font-size: 1rem;
@@ -115,7 +115,7 @@ body {
     box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
 }
 
-.input-group i {
+.input-group i:not(.password-toggle i) {
     position: absolute;
     left: 15px;
     top: 42px;
@@ -178,14 +178,27 @@ body {
     }
 }
 
+/* Обновленный стиль для кнопки переключения видимости пароля */
 .password-toggle {
     position: absolute;
     right: 15px;
-    top: 5px;
+    top: 42px;
     color: #666;
     cursor: pointer;
     font-size: 1.1rem;
     z-index: 2;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: #2575fc;
 }
 
 .info-message {

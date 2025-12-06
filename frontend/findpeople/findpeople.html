@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ищу людей - Fsociety</title>
+    <link rel="stylesheet" href="findpeople.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Fsociety</div>
+        <nav>
+            <button onclick="location.href='../main/main.html'">Предложения</button>
+            <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
+            <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
+            <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
+            <button onclick="logout()">Выход</button>
+            <span id="welcome-message">Имя пользователя</span>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Контейнер поиска людей -->
+        <div id="find-people-container" class="form-container">
+            <h2>Поиск специалистов</h2>
+            
+            <!-- Фильтры поиска -->
+            <div class="search-filters">
+                <div class="filter-group">
+                    <input type="text" id="search-name" placeholder="Имя, фамилия или ключевые слова...">
+                    <button class="search-btn" onclick="searchPeople()">
+                        <span class="search-icon">🔍</span> Поиск
+                    </button>
+                </div>
+                
+                <div class="advanced-filters">
+                    <div class="filter-row">
+                        <div class="filter-item">
+                            <label>Специальность:</label>
+                            <select id="filter-specialty">
+                                <option value="">Все специальности</option>
+                                <option value="frontend">Frontend разработчик</option>
+                                <option value="backend">Backend разработчик</option>
+                                <option value="fullstack">Fullstack разработчик</option>
+                                <option value="mobile">Мобильный разработчик</option>
+                                <option value="designer">UX/UI дизайнер</option>
+                                <option value="analyst">Аналитик данных</option>
+                                <option value="devops">DevOps инженер</option>
+                                <option value="qa">QA инженер</option>
+                                <option value="manager">Менеджер проекта</option>
+                                <option value="marketing">Маркетолог</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label>Уровень:</label>
+                            <select id="filter-level">
+                                <option value="">Все уровни</option>
+                                <option value="intern">Стажёр</option>
+                                <option value="junior">Junior</option>
+                                <option value="middle">Middle</option>
+                                <option value="senior">Senior</option>
+                                <option value="lead">Lead</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label>Зарплата от:</label>
+                            <input type="number" id="filter-salary" placeholder="₽" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="filter-row">
+                        <div class="filter-item">
+                            <label>Навыки:</label>
+                            <input type="text" id="filter-skills" placeholder="JavaScript, React, Python...">
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label>Город:</label>
+                            <input type="text" id="filter-city" placeholder="Москва, Санкт-Петербург...">
+                        </div>
+                        
+                        <div class="filter-item">
+                            <label>Формат работы:</label>
+                            <select id="filter-format">
+                                <option value="">Любой</option>
+                                <option value="office">Офис</option>
+                                <option value="remote">Удалённо</option>
+                                <option value="hybrid">Гибридный</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-actions">
+                    <button class="btn-primary" onclick="applyFilters()">Применить фильтры</button>
+                    <button class="btn-secondary" onclick="resetFilters()">Сбросить фильтры</button>
+                </div>
+            </div>
+            
+            <!-- Результаты поиска -->
+            <div class="search-results">
+                <div class="results-header">
+                    <h3>Найдено специалистов: <span id="results-count">12</span></h3>
+                    <div class="sort-options">
+                        <label>Сортировка:</label>
+                        <select id="sort-by" onchange="sortResults()">
+                            <option value="relevance">По релевантности</option>
+                            <option value="salary_desc">По зарплате (убыв.)</option>
+                            <option value="salary_asc">По зарплате (возр.)</option>
+                            <option value="experience">По опыту</option>
+                            <option value="date">По дате обновления</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Карточки специалистов -->
+                <div id="people-list" class="people-list">
+                    <!-- Пример карточки специалиста 1 -->
+                    <div class="person-card">
+                        <div class="person-header">
+                            <div class="person-avatar">
+                                <img src="https://via.placeholder.com/60" alt="Аватар">
+                            </div>
+                            <div class="person-info">
+                                <h3 class="person-name">Александр Петров</h3>
+                                <div class="person-title">Senior Frontend Developer</div>
+                                <div class="person-level">
+                                    <span class="level-badge senior">Senior</span>
+                                    <span class="exp-badge">Опыт: 7 лет</span>
+                                </div>
+                            </div>
+                            <div class="person-salary">
+                                <span class="salary-amount">от 250 000 ₽</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-skills">
+                            <h4>Ключевые навыки:</h4>
+                            <div class="skills-list">
+                                <span class="skill-tag main">JavaScript</span>
+                                <span class="skill-tag main">React</span>
+                                <span class="skill-tag main">TypeScript</span>
+                                <span class="skill-tag">Redux</span>
+                                <span class="skill-tag">Vue.js</span>
+                                <span class="skill-tag">Node.js</span>
+                                <span class="skill-tag">Webpack</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-details">
+                            <div class="detail-item">
+                                <span class="detail-label">📍</span>
+                                <span class="detail-text">Москва, готов к переезду</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💼</span>
+                                <span class="detail-text">Удалённо или офис</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">🎓</span>
+                                <span class="detail-text">МГТУ им. Баумана</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">🕒</span>
+                                <span class="detail-text">Обновлено: 2 дня назад</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-description">
+                            <p>Опытный Frontend разработчик с экспертизой в React ecosystem. Имею опыт работы в продуктовых компаниях и стартапах. Участвовал в создании масштабируемых SPA приложений с нуля.</p>
+                        </div>
+                        <div class="person-actions">
+                            <button class="btn-secondary" onclick="sendInvite(2)">Пригласить на вакансию</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Пример карточки специалиста 2 -->
+                    <div class="person-card">
+                        <div class="person-header">
+                            <div class="person-avatar">
+                                <img src="https://via.placeholder.com/60" alt="Аватар">
+                            </div>
+                            <div class="person-info">
+                                <h3 class="person-name">Мария Смирнова</h3>
+                                <div class="person-title">UX/UI Designer</div>
+                                <div class="person-level">
+                                    <span class="level-badge middle">Middle+</span>
+                                    <span class="exp-badge">Опыт: 4 года</span>
+                                </div>
+                            </div>
+                            <div class="person-salary">
+                                <span class="salary-amount">от 180 000 ₽</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-skills">
+                            <h4>Ключевые навыки:</h4>
+                            <div class="skills-list">
+                                <span class="skill-tag main">Figma</span>
+                                <span class="skill-tag main">Adobe XD</span>
+                                <span class="skill-tag main">UI/UX Design</span>
+                                <span class="skill-tag">Photoshop</span>
+                                <span class="skill-tag">Illustrator</span>
+                                <span class="skill-tag">Prototyping</span>
+                                <span class="skill-tag">User Research</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-details">
+                            <div class="detail-item">
+                                <span class="detail-label">📍</span>
+                                <span class="detail-text">Санкт-Петербург</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💼</span>
+                                <span class="detail-text">Удалённо</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">🎓</span>
+                                <span class="detail-text">СПбГУ</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">🕒</span>
+                                <span class="detail-text">Обновлено: 1 неделю назад</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-description">
+                            <p>Дизайнер интерфейсов с опытом работы в fintech и e-commerce. Создаю удобные и эстетичные интерфейсы, провожу пользовательские исследования, тестирую гипотезы.</p>
+                        </div>
+                        
+                        <div class="person-actions">
+                            <button class="btn-secondary" onclick="sendInvite(2)">Пригласить на вакансию</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Пример карточки специалиста 3 -->
+                    <div class="person-card">
+                        <div class="person-header">
+                            <div class="person-avatar">
+                                <img src="https://via.placeholder.com/60" alt="Аватар">
+                            </div>
+                            <div class="person-info">
+                                <h3 class="person-name">Дмитрий Иванов</h3>
+                                <div class="person-title">Backend Developer (Python)</div>
+                                <div class="person-level">
+                                    <span class="level-badge junior">Junior+</span>
+                                    <span class="exp-badge">Опыт: 1.5 года</span>
+                                </div>
+                            </div>
+                            <div class="person-salary">
+                                <span class="salary-amount">от 120 000 ₽</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-skills">
+                            <h4>Ключевые навыки:</h4>
+                            <div class="skills-list">
+                                <span class="skill-tag main">Python</span>
+                                <span class="skill-tag main">Django</span>
+                                <span class="skill-tag main">PostgreSQL</span>
+                                <span class="skill-tag">FastAPI</span>
+                                <span class="skill-tag">Docker</span>
+                                <span class="skill-tag">REST API</span>
+                                <span class="skill-tag">Git</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-details">
+                            <div class="detail-item">
+                                <span class="detail-label">📍</span>
+                                <span class="detail-text">Новосибирск, готов к переезду</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">💼</span>
+                                <span class="detail-text">Офис или гибрид</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">🎓</span>
+                                <span class="detail-text">НГУ</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">🕒</span>
+                                <span class="detail-text">Обновлено: сегодня</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-description">
+                            <p>Начинающий Backend разработчик, ищу интересные проекты для профессионального роста. Имею опыт разработки REST API, работы с базами данных, написания тестов.</p>
+                        </div>
+                        
+                        <div class="person-actions">
+                            <button class="btn-secondary" onclick="sendInvite(3)">Пригласить на вакансию</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Пагинация -->
+                <div class="pagination">
+                    <button class="page-btn" onclick="changePage(-1)" disabled>← Назад</button>
+                    <span class="page-numbers">
+                        <span class="page-active">1</span>
+                        <span class="page-number" onclick="changePage(2)">2</span>
+                        <span class="page-number" onclick="changePage(3)">3</span>
+                        <span class="page-dots">...</span>
+                        <span class="page-number" onclick="changePage(5)">5</span>
+                    </span>
+                    <button class="page-btn" onclick="changePage(1)">Вперёд →</button>
+                </div>
+            </div>
+        
+    </main>
+
+    <script>
+        function logout() {
+            if (confirm('Выйти из системы?')) {
+                location.href = 'index.html';
+            }
+        }
+        
+        function searchPeople() {
+            const query = document.getElementById('search-name').value;
+            if (query) {
+                alert(`Поиск: "${query}"`);
+            }
+        }
+        
+        function applyFilters() {
+            alert('Фильтры применены');
+        }
+        
+        function resetFilters() {
+            document.getElementById('search-name').value = '';
+            document.getElementById('filter-specialty').value = '';
+            document.getElementById('filter-level').value = '';
+            document.getElementById('filter-salary').value = '';
+            document.getElementById('filter-skills').value = '';
+            document.getElementById('filter-city').value = '';
+            document.getElementById('filter-format').value = '';
+        }
+        
+        function sortResults() {
+            const sortBy = document.getElementById('sort-by').value;
+            alert(`Сортировка по: ${sortBy}`);
+        }
+        
+        function viewProfile(id) {
+            alert(`Просмотр профиля кандидата #${id}`);
+        }
+        
+        let currentCandidateId = null;
+        
+        function sendInvite(id) {
+            currentCandidateId = id;
+            document.getElementById('invite-modal').classList.remove('hidden');
+        }
+        
+        function sendInvitation() {
+            const vacancy = document.getElementById('vacancy-select').value;
+            const message = document.getElementById('invite-message').value;
+            
+            if (!vacancy) {
+                alert('Выберите вакансию!');
+                return;
+            }
+            
+            alert(`Приглашение отправлено кандидату #${currentCandidateId} на вакансию #${vacancy}`);
+            closeModal();
+        }
+        
+        function closeModal() {
+            document.getElementById('invite-modal').classList.add('hidden');
+            currentCandidateId = null;
+            document.getElementById('vacancy-select').value = '';
+            document.getElementById('invite-message').value = '';
+        }
+        
+        function saveCandidate(id) {
+            alert(`Кандидат #${id} сохранён`);
+        }
+        
+        function viewSaved(id) {
+            alert(`Просмотр сохранённого кандидата #${id}`);
+        }
+        
+        function removeSaved(event, id) {
+            event.stopPropagation();
+            alert(`Кандидат #${id} удалён из сохранённых`);
+        }
+        
+        function changePage(direction) {
+            alert(`Смена страницы: ${direction > 0 ? 'вперёд' : 'назад'}`);
+        }
+        
+        // Закрытие модального окна при клике вне его
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('invite-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

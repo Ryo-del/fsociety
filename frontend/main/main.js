@@ -28,11 +28,16 @@ function showMessage(container, text, isError = false) {
     }
 }
 
+// Функция для перехода в профиль
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
+
 async function initPage() {
     try {
         const res = await fetch(`${API_BASE_URL}/checkauth`, { credentials: "include" });
         if (!res.ok) {
-            location.href = "../auth/login.html";
+            location.href = "../index.html";
             return false;
         }
 
@@ -41,11 +46,33 @@ async function initPage() {
         if (welcomeMessage) {
             welcomeMessage.textContent = user.name || user.username || "Пользователь";
             welcomeMessage.style.display = 'inline';
+            
+            // Добавляем иконку профиля рядом с именем пользователя
+            welcomeMessage.innerHTML = `<i class="fas fa-user-circle"></i> ${welcomeMessage.textContent}`;
+            
+            // Добавляем стили для курсора и внешнего вида
+            welcomeMessage.style.cursor = 'pointer';
+            welcomeMessage.style.color = '#2575fc';
+            welcomeMessage.style.fontWeight = '500';
+            welcomeMessage.style.padding = '5px 10px';
+            welcomeMessage.style.borderRadius = '5px';
+            welcomeMessage.style.transition = 'all 0.3s ease';
+            
+            // Добавляем обработчик hover эффекта
+            welcomeMessage.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f0f5ff';
+                this.style.textDecoration = 'underline';
+            });
+            
+            welcomeMessage.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'transparent';
+                this.style.textDecoration = 'none';
+            });
         }
         
         return true;
     } catch {
-        location.href = "../auth/login.html";
+        location.href = "../index.html";
         return false;
     }
 }
@@ -59,9 +86,8 @@ async function logout() {
     } catch (e) {
         console.error("Logout failed but proceeding with redirect:", e);
     }
-    location.href = "../auth/login.html";
+    location.href = "../index.html";
 }
-
 
 // --- ОСНОВНАЯ ЛОГИКА ОТОБРАЖЕНИЯ И ЗАГРУЗКИ ---
 
@@ -91,23 +117,40 @@ function toggleDescription(button) {
     }
 }
 
+// Функция для обработки отклика на вакансию
+function respondToJob(jobTitle, telegramUsername) {
+    // Формируем ссылку на Telegram
+    let telegramLink;
+    
+    // Убираем @ если есть в начале
+    const cleanUsername = telegramUsername.replace(/^@/, '');
+    
+    // Формируем ссылку для открытия чата в Telegram
+    telegramLink = `https://t.me/${cleanUsername}`;
+    
+    // Показываем уведомление
+    notify(`Вы откликаетесь на вакансию "${jobTitle}". Открываю Telegram...`, 'success');
+    
+    // Открываем ссылку в новой вкладке
+    setTimeout(() => {
+        window.open(telegramLink, '_blank');
+    }, 500);
+    
+    return false;
+}
 
 // Создание HTML-карточки вакансии
 function createJobCard(job) {
     const jobCard = document.createElement('div');
     jobCard.className = 'job-card';
     jobCard.dataset.id = job.id;
-    
-    // ИСПРАВЛЕНО: job.JobType -> job.job_type
     jobCard.dataset.type = job.job_type || 'full'; 
     jobCard.dataset.salary = parseSalary(job.salary);
 
-    // ИСПРАВЛЕНО: job.Skills -> job.skills
     const skills = job.skills
         ? job.skills.split(",").map(s => `<span class="skill-tag">${s.trim()}</span>`).join("")
         : "<span class='skill-tag'>Навыки не указаны</span>";
     
-    // ИСПРАВЛЕНО: job.JobType -> job.job_type
     const jobTypeDisplay = {
         'full': 'Полная занятость',
         'part': 'Частичная занятость',
@@ -115,8 +158,15 @@ function createJobCard(job) {
         'internship': 'Стажировка'
     }[job.job_type] || 'Не указано';
 
-    // ИСПРАВЛЕНО: job.Location -> job.location
-    const jobLocation = job.location || 'Город не указан'; 
+    const jobLocation = job.location || 'Город не указан';
+    
+    // Проверяем наличие Telegram username
+    const hasTelegram = job.telegram && job.telegram.trim() !== '';
+    const telegramUsername = hasTelegram ? job.telegram.replace(/^@/, '') : '';
+    const telegramDisplay = hasTelegram ? `@${telegramUsername}` : 'Не указан';
+    
+    // Формируем ссылку на Telegram
+    const telegramLink = hasTelegram ? `https://t.me/${telegramUsername}` : '#';
 
     jobCard.innerHTML = `
         <div class="job-card-header">
@@ -134,8 +184,18 @@ function createJobCard(job) {
             <span class="job-location">${jobLocation}</span>
             <span class="job-date">Сегодня</span> 
         </div>
+        
+        <div class="job-contact-info">
+            <div class="contact-item">
+                <i class="fas fa-comment-alt"></i>
+                <span>Контакты: ${telegramDisplay}</span>
+            </div>
+        </div>
+        
         <div class="job-actions"> 
-            <button class="primary" onclick="notify('Отклик на вакансию ${job.title} отправлен!', 'success')">Откликнуться</button>
+            <button class="primary" onclick="respondToJob('${job.title.replace(/'/g, "\\'")}', '${telegramUsername}')">
+                <i class="fab fa-telegram"></i> Откликнуться в Telegram
+            </button>
         </div>
     `;
     
@@ -147,7 +207,6 @@ function updateJobCount(count) {
     const container = document.getElementById('jobs-list-container');
     showMessage(container, `Найдено ${count} вакансий`, false);
 }
-
 
 // Отрисовка списка вакансий
 function renderJobs(jobs) {
@@ -167,14 +226,12 @@ function renderJobs(jobs) {
     });
 }
 
-
 // Загрузка всех вакансий (URL /showjobs)
 async function loadJobs() {
     const container = document.getElementById('jobs-list-container');
     showMessage(container, 'Загрузка всех вакансий...', false);
 
     try {
-        // Проверено: Используется правильный endpoint /showjobs
         const response = await fetch(`${API_BASE_URL}/showjobs`, { 
             method: 'GET',
             credentials: 'include'
@@ -200,7 +257,6 @@ async function loadJobs() {
     }
 }
 
-
 // --- ЛОГИКА ФИЛЬТРАЦИИ ---
 
 function applyFilters() {
@@ -213,12 +269,10 @@ function applyFilters() {
     const selectedSalaryRange = salaryFilter ? salaryFilter.value : '0'; 
     
     let filteredJobs = allJobs.filter(job => {
-        // ИСПРАВЛЕНО: job.Title -> job.title, job.Company -> job.company
         const matchesSearch = !searchTerm || 
             (job.title && job.title.toLowerCase().includes(searchTerm)) ||
             (job.company && job.company.toLowerCase().includes(searchTerm));
 
-        // ИСПРАВЛЕНО: job.JobType -> job.job_type
         const matchesType = !selectedType || job.job_type === selectedType;
 
         // Фильтр по зарплате (использует job.salary)

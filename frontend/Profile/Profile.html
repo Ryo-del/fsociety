@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Style Profile</title>
+    <link rel="stylesheet" href="Profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <nav class="navbar">
+                <div class="nav-left">
+                    <i class="fab fa-github nav-icon"></i>
+                    <div class="nav-links">
+                        <a href="#" class="nav-link">Обзор</a>
+                        <a href="#" class="nav-link active">Реpositories <span class="repo-count">12</span></a>
+                        <a href="#" class="nav-link">Проекты</a>
+                        <a href="#" class="nav-link">Пакеты</a>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <i class="fas fa-bell"></i>
+                    <div class="user-dropdown">
+                        <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="User" class="avatar">
+                        <i class="fas fa-caret-down"></i>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="profile-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="profile-card">
+                    <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="Profile" class="profile-avatar">
+                    <h1 class="profile-name">octocat</h1>
+                    <p class="profile-username">The Octocat</p>
+                    <p class="profile-bio">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                    
+                    <button class="btn btn-edit">
+                        <i class="fas fa-pencil-alt"></i> Редактировать профиль
+                    </button>
+                    
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <i class="fas fa-users"></i>
+                            <span><strong>24</strong> подписчиков</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-user-friends"></i>
+                            <span><strong>56</strong> подписок</span>
+                        </div>
+                        <div class="stat">
+                            <i class="fas fa-star"></i>
+                            <span><strong>128</strong> звезд</span>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-info">
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Сан-Франциско</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-link"></i>
+                            <a href="#">https://github.blog</a>
+                        </div>
+                        <div class="info-item">
+                            <i class="fab fa-twitter"></i>
+                            <a href="#">@octocat</a>
+                        </div>
+                        <div class="info-item">
+                            <i class="far fa-building"></i>
+                            <span>@github</span>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-highlights">
+                        <h3>Highlights</h3>
+                        <div class="highlight-item">
+                            <i class="fas fa-medal"></i>
+                            <span>Arctic Code Vault Contributor</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="organizations">
+                    <h3>Организации</h3>
+                    <div class="org-list">
+                        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="Org" class="org-avatar">
+                        <img src="https://avatars.githubusercontent.com/u/9919?s=200&v=4" alt="Org" class="org-avatar">
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Navigation Tabs -->
+                <nav class="content-tabs">
+                    <a href="#" class="tab active">
+                        <i class="far fa-bookmark"></i> Overview
+                    </a>
+                    <a href="#" class="tab">
+                        <i class="far fa-file-code"></i> Repositories <span class="tab-badge">12</span>
+                    </a>
+                    <a href="#" class="tab">
+                        <i class="far fa-chart-bar"></i> Projects
+                    </a>
+                    <a href="#" class="tab">
+                        <i class="fas fa-cube"></i> Packages
+                    </a>
+                </nav>
+
+                <!-- Pinned Repositories -->
+                <section class="pinned-repos">
+                    <h2><i class="fas fa-thumbtack"></i> Pinned repositories</h2>
+                    <div class="repo-grid">
+                        <div class="repo-card">
+                            <div class="repo-header">
+                                <i class="far fa-bookmark"></i>
+                                <a href="#" class="repo-name">octocat / Hello-World</a>
+                                <span class="repo-badge public">Public</span>
+                            </div>
+                            <p class="repo-description">My first repository on GitHub!</p>
+                            <div class="repo-footer">
+                                <span class="repo-lang">
+                                    <span class="lang-color"></span> JavaScript
+                                </span>
+                                <span class="repo-stars">
+                                    <i class="far fa-star"></i> 1,234
+                                </span>
+                                <span class="repo-forks">
+                                    <i class="fas fa-code-branch"></i> 567
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="repo-card">
+                            <div class="repo-header">
+                                <i class="far fa-bookmark"></i>
+                                <a href="#" class="repo-name">octocat / Spoon-Knife</a>
+                                <span class="repo-badge public">Public</span>
+                            </div>
+                            <p class="repo-description">This repo is for demonstration purposes only.</p>
+                            <div class="repo-footer">
+                                <span class="repo-lang">
+                                    <span class="lang-color" style="background: #f1e05a"></span> JavaScript
+                                </span>
+                                <span class="repo-stars">
+                                    <i class="far fa-star"></i> 892
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="repo-card">
+                            <div class="repo-header">
+                                <i class="far fa-bookmark"></i>
+                                <a href="#" class="repo-name">octocat / git-consortium</a>
+                                <span class="repo-badge public">Public</span>
+                            </div>
+                            <p class="repo-description">This repo is for demonstration purposes only.</p>
+                            <div class="repo-footer">
+                                <span class="repo-lang">
+                                    <span class="lang-color" style="background: #3572A5"></span> Python
+                                </span>
+                                <span class="repo-stars">
+                                    <i class="far fa-star"></i> 456
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activity Section -->
+                <section class="activity-section">
+                    <h2>Recent activity</h2>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-code-commit"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>
+                                    <strong>Pushed 1 commit</strong> to 
+                                    <a href="#">octocat/Hello-World</a>
+                                </p>
+                                <small class="activity-time">2 hours ago</small>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>
+                                    <strong>Created branch</strong> 
+                                    <a href="#">feature/new-design</a> in 
+                                    <a href="#">octocat/Spoon-Knife</a>
+                                </p>
+                                <small class="activity-time">Yesterday</small>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="far fa-star"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>
+                                    <strong>Starred</strong> 
+                                    <a href="#">vercel/next.js</a>
+                                </p>
+                                <small class="activity-time">2 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contributions Graph -->
+                <section class="contributions-section">
+                    <h2>Contributions</h2>
+                    <div class="contributions-graph">
+                        <div class="graph-header">
+                            <span>Last year</span>
+                            <span class="total-contributions">1,234 contributions</span>
+                        </div>
+                        <div class="graph-grid">
+                            <!-- График будет создан через CSS -->
+                            <div class="graph-months">
+                                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
+                                <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span>
+                                <span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span>
+                            </div>
+                            <div class="graph-days">
+                                <div class="day-column">
+                                    <div class="day-cell level-0"></div>
+                                    <div class="day-cell level-1"></div>
+                                    <div class="day-cell level-2"></div>
+                                    <div class="day-cell level-3"></div>
+                                    <div class="day-cell level-4"></div>
+                                    <div class="day-cell level-2"></div>
+                                    <div class="day-cell level-1"></div>
+                                </div>
+                                <!-- Повторить для других недель -->
+                            </div>
+                        </div>
+                        <div class="graph-legend">
+                            <span>Меньше</span>
+                            <div class="legend-cells">
+                                <div class="legend-cell level-0"></div>
+                                <div class="legend-cell level-1"></div>
+                                <div class="legend-cell level-2"></div>
+                                <div class="legend-cell level-3"></div>
+                                <div class="legend-cell level-4"></div>
+                            </div>
+                            <span>Больше</span>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

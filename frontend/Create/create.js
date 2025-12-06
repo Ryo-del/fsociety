@@ -55,6 +55,8 @@ async function createJob(jobData) {
             }
         });
         
+        console.log('Отправляемые данные:', Object.fromEntries(formData)); // Для отладки
+        
         const response = await fetch(CREATE_URL, {
             method: 'POST',
             headers: {
@@ -88,7 +90,7 @@ async function handleCreateJobSubmit(e) {
     // Используем querySelector для поиска элемента внутри формы
     const messageElement = form.querySelector('.form-message'); 
     
-    // Собираем данные формы
+    // Собираем данные формы - ВАЖНО: используем правильные имена полей
     const jobData = {
         title: form.querySelector('[name="title"]').value,
         company: form.querySelector('[name="company"]').value,
@@ -98,16 +100,39 @@ async function handleCreateJobSubmit(e) {
         // Собираем дополнительные поля, которые есть в HTML
         location: form.querySelector('[name="location"]').value,
         experience: form.querySelector('[name="experience"]').value,
-        job_type: form.querySelector('[name="job_type"]').value
-        // School здесь не используется, но можно добавить, если нужно:
-        // school: form.querySelector('[name="school"]').value,
+        job_type: form.querySelector('[name="job_type"]').value,
+        // Используем правильное имя поля из HTML
+        telegram: form.querySelector('[name="telegram"]').value,
     };
     
-    // Валидация обязательных полей (должна быть в HTML, но проверяем и здесь)
-    if (!jobData.title || !jobData.description || !jobData.company || !jobData.salary || !jobData.skills) {
-        messageElement.textContent = 'Пожалуйста, заполните все обязательные поля';
+    // Валидация обязательных полей
+    const requiredFields = ['title', 'company', 'description', 'salary', 'skills', 'telegram'];
+    const missingFields = [];
+    
+    requiredFields.forEach(field => {
+        if (!jobData[field] || jobData[field].trim() === '') {
+            missingFields.push(field);
+        }
+    });
+    
+    if (missingFields.length > 0) {
+        messageElement.textContent = `Пожалуйста, заполните все обязательные поля: ${missingFields.join(', ')}`;
         messageElement.className = 'form-message error';
         return;
+    }
+    
+    // Проверка формата Telegram (опционально, можно добавить валидацию)
+    if (jobData.telegram) {
+        // Убираем @ в начале, если есть
+        jobData.telegram = jobData.telegram.replace(/^@/, '');
+        
+        // Проверяем, что это допустимый username Telegram
+        const telegramRegex = /^[a-zA-Z0-9_]{5,32}$/;
+        if (!telegramRegex.test(jobData.telegram)) {
+            messageElement.textContent = 'Некорректный формат Telegram username. Используйте только буквы, цифры и подчеркивания (5-32 символа)';
+            messageElement.className = 'form-message error';
+            return;
+        }
     }
     
     // Показываем загрузку
@@ -126,7 +151,6 @@ async function handleCreateJobSubmit(e) {
         
         // Предлагаем перейти к просмотру вакансий
         setTimeout(() => {
-            // Меняем адрес на ../myjob/myjob.html для корректного перехода
             if (confirm('Вакансия создана! Хотите перейти к списку ваших вакансий?')) {
                 window.location.href = '../myjob/myjob.html';
             }
@@ -153,6 +177,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         const titleInput = form.querySelector('[name="title"]');
         if (titleInput) {
             titleInput.focus();
+        }
+        
+        // Добавляем обработчик для автоматического добавления @ в поле Telegram (опционально)
+        const telegramInput = form.querySelector('[name="telegram"]');
+        if (telegramInput) {
+            telegramInput.addEventListener('input', function(e) {
+                // Автоматически добавляем @ в начале, если его нет
+                let value = e.target.value;
+                if (value && !value.startsWith('@') && !value.includes(' ')) {
+                    e.target.value = '@' + value;
+                }
+            });
         }
     }
 });

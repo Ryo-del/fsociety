@@ -1,5 +1,5 @@
 // Global constants
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = "http://185.96.80.7:8080";
 let allJobs = []; // Хранит все загруженные объявления для фильтрации
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (УВЕДОМЛЕНИЯ, АВТОРИЗАЦИЯ, ВЫХОД) ---

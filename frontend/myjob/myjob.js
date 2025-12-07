@@ -1,5 +1,5 @@
 // Базовый URL API
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = "http://185.96.80.7:8080";
 async function logout() {
     try {
         await fetch(`${API_BASE_URL}/logout`, {

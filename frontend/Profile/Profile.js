@@ -379,7 +379,9 @@ function openProfileModal() {
     document.body.style.overflow = 'hidden';
 }
 
-// Заполнение формы данными анкеты
+
+
+// Заполнение формы данными анкеты (уже есть в вашем коде)
 function fillProfileForm(anketa) {
     document.getElementById('profile-id').value = anketa.id || '';
     document.getElementById('profile-name').value = anketa.name || '';

@@ -64,7 +64,7 @@ async function loadMyJobs() {
 
         // Перехват 401 и 403
         if (response.status === 401 || response.status === 403) {
-            window.location.href = '../auth/login.html';
+            window.location.href = '..index.html';
             return;
         }
 
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else if (response.status === 403) {
                      notify('Ошибка: Вы не можете редактировать чужое объявление', 'error');
                 } else if (response.status === 401) {
-                     window.location.href = '../auth/login.html';
+                     window.location.href = '../index.html';
                 } else {
                     const errorText = await response.text();
                     notify(`Ошибка сохранения: ${errorText || response.statusText}`, 'error');

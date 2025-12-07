@@ -1,5 +1,5 @@
 // Базовый URL API
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = "https://fsociety-production-82b4.up.railway.app";
 
 // 1. АВТОРИЗАЦИЯ И УВЕДОМЛЕНИЯ (СКОПИРОВАНО ИЗ MYJOB.JS)
 // -----------------------------------------------------------

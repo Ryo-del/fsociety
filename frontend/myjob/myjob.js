@@ -1,5 +1,5 @@
 // Базовый URL API
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = "https://fsociety-production-82b4.up.railway.app";
 async function logout() {
     try {
         await fetch(`${API_BASE_URL}/logout`, {

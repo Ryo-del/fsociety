@@ -160,10 +160,22 @@ async function handleCreateJobSubmit(e) {
         messageElement.className = 'form-message error';
     }
 }
-
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (e) {
+        console.error("Logout failed but proceeding with redirect:", e);
+    }
+    location.href = "../index.html";
+}
 // 3. ИНИЦИАЛИЗАЦИЯ
 // -----------------------------------------------------------
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
 // Инициализация страницы create.html
 document.addEventListener('DOMContentLoaded', async function() {
     await initPage();

@@ -28,5 +28,17 @@
     "username": "66",
     "usermail": "66@s.com",
     "password": "$2a$10$A8.D.p56VtbZl87F8wjvv.cFD9.yznaVyFTcmrlz2XJVlv3cVOgvq"
+  },
+  {
+    "id": "56ca6496-dbc1-4234-a6e3-faafc382eb93",
+    "username": "вкап",
+    "usermail": "gdash@gmail.com",
+    "password": "$2a$10$Fp8TZATVj4mA07ePacieLObOFRR.PflsqKxmvUf.KPezJ4FWAFOKK"
+  },
+  {
+    "id": "7a3bd959-c7ed-42af-998e-481a53b4dad8",
+    "username": "88",
+    "usermail": "88@g.com",
+    "password": "$2a$10$9HOvTgUFuhMeLU4VPZLi6.i7ZPU/GmxH97arI9VH/jq6.R/z5Hc9q"
   }
 ]

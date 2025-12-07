@@ -29,6 +29,7 @@ type Ankety struct {
 	City        string `json:"city"`
 	Jobtype     string `json:"jobtype"`
 	Description string `json:"description,omitempty"`
+	Telegram    string `json:"telegram,omitempty"`
 }
 
 var anketybase string = "ankety.json"
@@ -113,6 +114,7 @@ func ShowAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(responseData)
 }
+
 func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("=== ОБРАБОТЧИК СОЗДАНИЯ АНКЕТЫ ===")
 	fmt.Printf("Метод: %s\n", r.Method)
@@ -143,10 +145,12 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 	school := r.FormValue("school")
 	skills := r.FormValue("skills")
 	description := r.FormValue("description")
+	telegram := r.FormValue("telegram")
 
-	fmt.Printf("Поля анкеты: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s'\n",
-		name, gender, age, job, school, skills)
+	fmt.Printf("Поля анкеты: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s', telegram='%s'\n",
+		name, gender, age, job, school, skills, telegram)
 
+	// Проверяем только обязательные поля
 	if name == "" || age == "" || job == "" || school == "" || gender == "" || skills == "" {
 		errorMsg := "Missing required fields: "
 		if name == "" {
@@ -224,6 +228,7 @@ func CreateHandler(w http.ResponseWriter, r *http.Request) {
 		Salary:      r.FormValue("salary"),
 		Experience:  r.FormValue("experience"),
 		Jobtype:     r.FormValue("jobtype"),
+		Telegram:    telegram,
 	}
 
 	fmt.Printf("Создана новая анкета: ID=%s, UserID=%s, Name=%s\n", newID, userID, name)
@@ -274,12 +279,14 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	school := r.FormValue("school")
 	skills := r.FormValue("skills")
 	description := r.FormValue("description")
+	telegram := r.FormValue("telegram")
 
-	fmt.Printf("Обновление анкеты ID=%s: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s'\n",
-		id, name, gender, age, job, school, skills)
+	fmt.Printf("Обновление анкеты ID=%s: name='%s', gender='%s', age='%s', job='%s', school='%s', skills='%s', telegram='%s'\n",
+		id, name, gender, age, job, school, skills, telegram)
 
+	// Проверяем только обязательные поля (telegram теперь необязателен)
 	if id == "" || name == "" || gender == "" || age == "" || job == "" || school == "" || skills == "" {
-		http.Error(w, "Missing fields", http.StatusBadRequest)
+		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
 
@@ -323,6 +330,7 @@ func UpdateAnketyHandler(w http.ResponseWriter, r *http.Request) {
 			anketyList[i].Salary = r.FormValue("salary")
 			anketyList[i].Experience = r.FormValue("experience")
 			anketyList[i].Jobtype = r.FormValue("jobtype")
+			anketyList[i].Telegram = telegram
 			found = true
 
 			fmt.Printf("Анкета обновлена: ID=%s\n", id)
@@ -383,7 +391,7 @@ func UploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// Проверяем тип файла
-	allowedTypes := []string{"image/jpeg", "image/jpg", "image/png", "image/gif"}
+	allowedTypes := []string{"image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"}
 	fileType := handler.Header.Get("Content-Type")
 	isValidType := false
 	for _, allowed := range allowedTypes {
@@ -394,7 +402,7 @@ func UploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !isValidType {
-		http.Error(w, "Invalid file type. Allowed: JPEG, JPG, PNG, GIF", http.StatusBadRequest)
+		http.Error(w, "Invalid file type. Allowed: JPEG, JPG, PNG, GIF, WebP", http.StatusBadRequest)
 		return
 	}
 
@@ -460,13 +468,7 @@ func UploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	anketyList[userAnketaIndex].Photo = "photos/" + newFileName
 
 	// Сохраняем обновленные данные
-	updatedData, err := json.MarshalIndent(anketyList, "", "  ")
-	if err != nil {
-		http.Error(w, "Error encoding data", http.StatusInternalServerError)
-		return
-	}
-
-	err = os.WriteFile(anketybase, updatedData, 0644)
+	err = SaveAnkety(anketyList)
 	if err != nil {
 		http.Error(w, "Error writing data file", http.StatusInternalServerError)
 		return
@@ -496,11 +498,16 @@ func GetPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Проверяем безопасность пути
-	if strings.Contains(filename, "..") || strings.Contains(filename, "/") {
+	// Проверяем безопасность пути (только на наличие "..")
+	if strings.Contains(filename, "..") {
 		http.Error(w, "Invalid filename", http.StatusBadRequest)
 		return
 	}
+
+	// Убираем возможные префиксы пути
+	filename = strings.TrimPrefix(filename, "photos/")
+	filename = strings.TrimPrefix(filename, "uploads/photos/")
+	filename = strings.TrimPrefix(filename, "uploads/")
 
 	// Формируем путь к файлу
 	filePath := filepath.Join("uploads", "photos", filename)
@@ -512,6 +519,7 @@ func GetPhotoHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Проверяем наличие дефолтной аватарки
 		if _, err := os.Stat(defaultAvatarPath); os.IsNotExist(err) {
+			// Создаем дефолтную аватарку если её нет
 			http.Error(w, "File not found", http.StatusNotFound)
 			return
 		}
@@ -529,6 +537,8 @@ func GetPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		contentType = "image/png"
 	case ".gif":
 		contentType = "image/gif"
+	case ".webp":
+		contentType = "image/webp"
 	default:
 		contentType = "application/octet-stream"
 	}
@@ -591,13 +601,7 @@ func DeletePhotoHandler(w http.ResponseWriter, r *http.Request) {
 	anketyList[userAnketaIndex].Photo = ""
 
 	// Сохраняем обновленные данные
-	updatedData, err := json.MarshalIndent(anketyList, "", "  ")
-	if err != nil {
-		http.Error(w, "Error encoding data", http.StatusInternalServerError)
-		return
-	}
-
-	err = os.WriteFile(anketybase, updatedData, 0644)
+	err = SaveAnkety(anketyList)
 	if err != nil {
 		http.Error(w, "Error writing data file", http.StatusInternalServerError)
 		return
@@ -606,6 +610,7 @@ func DeletePhotoHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Photo deleted successfully"))
 }
+
 func GetMyAnketaHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -657,6 +662,7 @@ func GetMyAnketaHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 func DeleteAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -715,6 +721,7 @@ func DeleteAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Anketa deleted successfully"))
 }
+
 func SearchAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -822,6 +829,7 @@ func SearchAnketyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
 func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -976,22 +984,6 @@ func GetAnketaByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(foundAnketa)
-}
-
-// Функция для регистрации всех обработчиков
-func RegisterHandlers() {
-	http.HandleFunc("/ankety/create", CreateHandler)
-	http.HandleFunc("/ankety/update", UpdateAnketyHandler)
-	http.HandleFunc("/ankety/show", ShowAnketyHandler)
-	http.HandleFunc("/ankety/my", GetMyAnketaHandler)
-	http.HandleFunc("/ankety/delete", DeleteAnketyHandler)
-	http.HandleFunc("/ankety/search", SearchAnketyHandler)
-	http.HandleFunc("/ankety/stats", GetStatsHandler)
-	http.HandleFunc("/ankety/export", ExportCSVHandler)
-	http.HandleFunc("/ankety/get", GetAnketaByIDHandler)
-	http.HandleFunc("/ankety/photo/upload", UploadPhotoHandler)
-	http.HandleFunc("/ankety/photo/get", GetPhotoHandler)
-	http.HandleFunc("/ankety/photo/delete", DeletePhotoHandler)
 }
 
 // Вспомогательная функция для проверки существования анкеты пользователя

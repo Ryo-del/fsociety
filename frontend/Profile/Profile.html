@@ -14,7 +14,7 @@
     <header>
         <div class="logo">Fsociety</div>
         <nav>
-            <button onclick="location.href='../main/main.html'">Предложения</button>
+            <button onclick="location.href='../main/main.html'">Придложения</button>
             <button onclick="location.href='../create/create.html'">Разместить обьявление</button>
             <button onclick="location.href='../myjob/myjob.html'">Мои обьявления</button>
             <button onclick="location.href='../findpeople/findpeople.html'" class="active">Найти коллегу</button>
@@ -112,9 +112,14 @@
                     <div class="form-group">
                         <label for="profile-name">Имя *</label>
                         <input type="text" id="profile-name" name="name" required 
-                               placeholder="Введите ваше полное имя">
+                                placeholder="Введите ваше полное имя">
                     </div>
                     
+                    <div class="form-group">
+                        <label for="profile-telegram">Telegram *</label>
+                        <input type="text" id="profile-telegram" name="telegram" 
+                               placeholder="Например: @username_fsociety">
+                    </div>
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="profile-age">Возраст *</label>
@@ -141,17 +146,35 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="profile-position">Должность</label>
-                            <input type="text" id="profile-position" name="position" 
-                                   placeholder="Например: Senior Developer, Team Lead">
-                        </div>
+    <label for="profile-position">Должность</label>
+    <select id="profile-position" name="position">
+        <option value="">Не указано</option>
+        <option value="Intern">Intern (Стажер)</option>
+        <option value="Junior">Junior</option>
+        <option value="Middle">Middle</option>
+        <option value="Senior">Senior</option>
+        <option value="Lead">Lead</option>
+    </select>
+</div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="profile-job">Профессия *</label>
-                        <input type="text" id="profile-job" name="job" required 
-                               placeholder="Например: Frontend Developer, UX Designer, Project Manager">
-                    </div>
+        <label for="profile-job">Профессия *</label>
+        <select id="profile-job" name="job" required>
+        <option value="">Выберите профессию</option>
+        <option value="Frontend Developer">Frontend Developer</option>
+        <option value="Backend Developer">Backend Developer</option>
+        <option value="Fullstack Developer">Fullstack Developer</option>
+        <option value="DevOps Engineer">DevOps Engineer</option>
+        <option value="Data Scientist">Data Scientist</option>
+        <option value="UI/UX Designer">UI/UX Designer</option>
+        <option value="Project Manager">Project Manager</option>
+        <option value="QA Engineer">QA Engineer</option>
+        <option value="Data Analyst">Data Analyst</option>
+        <option value="Marketing">Marketing</option>
+        <option value="другое">Другое (указать в описании)</option>
+    </select>
+</div>
                     
                     <div class="form-group">
                         <label for="profile-school">Образование *</label>

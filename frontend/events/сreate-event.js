@@ -13,7 +13,9 @@ function togglePriceFields() {
         priceInput.value = '';
     }
 }
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
 // Функция для предпросмотра мероприятия
 function previewEvent() {
     const form = document.getElementById('create-event-form');

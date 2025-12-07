@@ -1,22 +1,35 @@
 // Базовый URL API
 const API_BASE_URL = window.location.origin;
-
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (e) {
+        console.error("Logout failed but proceeding with redirect:", e);
+    }
+    location.href = "../index.html";
+}
 // Авторизация
 async function initPage() {
     try {
         const res = await fetch(`${API_BASE_URL}/checkauth`, { credentials: "include" });
         if (!res.ok) {
-            location.href = "../auth/login.html";
+            location.href = "../index.html";
             return false;
         }
 
         const user = await res.json();
-        document.getElementById("welcome-message").textContent =
-            user.name || user.username || "Пользователь";
+        const welcomeMessage = document.getElementById("welcome-message");
+        if (welcomeMessage) {
+            welcomeMessage.textContent = user.name || user.username || "Пользователь";
+            welcomeMessage.style.display = 'inline'; // ← ДОБАВИТЬ ЭТУ СТРОЧКУ
+        }
 
         return true;
     } catch {
-        location.href = "../auth/login.html";
+        location.href = "../index.html";
         return false;
     }
 }
@@ -30,7 +43,9 @@ function notify(text, type = "info") {
     setTimeout(() => box.classList.add("show"), 10);
     setTimeout(() => box.remove(), 3500);
 }
-
+function goToProfile() {
+    window.location.href = '../profile/profile.html';
+}
 // Загрузка объявлений
 async function loadMyJobs() {
     // Находим элемент сообщения, который находится вне контейнера списка
@@ -49,7 +64,7 @@ async function loadMyJobs() {
 
         // Перехват 401 и 403
         if (response.status === 401 || response.status === 403) {
-            window.location.href = '../auth/login.html';
+            window.location.href = '..index.html';
             return;
         }
 
@@ -244,7 +259,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 } else if (response.status === 403) {
                      notify('Ошибка: Вы не можете редактировать чужое объявление', 'error');
                 } else if (response.status === 401) {
-                     window.location.href = '../auth/login.html';
+                     window.location.href = '../index.html';
                 } else {
                     const errorText = await response.text();
                     notify(`Ошибка сохранения: ${errorText || response.statusText}`, 'error');

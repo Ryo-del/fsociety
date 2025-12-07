@@ -1,7 +1,7 @@
 
 
 // Базовый URL для API запросов
-const API_BASE_URL = "http://185.96.80.7:8080";
+const API_BASE_URL = "https://fsociety-production-82b4.up.railway.app";
 
 // Получение элементов
 const loginTab = document.getElementById('login-tab');

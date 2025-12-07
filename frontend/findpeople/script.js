@@ -1,5 +1,5 @@
 
-    const API_BASE_URL = "http://185.96.80.7:8080"; // Измените на ваш URL API
+    const API_BASE_URL = "https://fsociety-production-82b4.up.railway.app"; // Измените на ваш URL API
     // Глобальная переменная для хранения ID текущего кандидата
 let currentCandidateId = null;
     // Глобальные переменные

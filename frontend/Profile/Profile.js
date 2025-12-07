@@ -1,7 +1,7 @@
 // Глобальные переменные
 let currentAnketa = null;
 let photoFile = null;
-let defaultAvatar = "https://avatars.githubusercontent.com/u/583231?v=4";
+let defaultAvatar = "https://fsociety-production-82b4.up.railway.app";
 let authUser = null;
 
 // Функция для обрезки и сжатия изображения

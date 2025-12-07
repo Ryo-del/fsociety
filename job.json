@@ -37,5 +37,19 @@
     "experience": "3 года",
     "job_type": "full",
     "telegram": "Hirasawaaaa"
+  },
+  {
+    "id": "ab439286-28b7-4976-ab7a-64574840b70b",
+    "user_id": "7a3bd959-c7ed-42af-998e-481a53b4dad8",
+    "title": "TEST",
+    "company": "TEST",
+    "school": "",
+    "description": "DSDSDS",
+    "salary": "50",
+    "skills": "JS",
+    "location": "TAGANROG",
+    "experience": "4",
+    "job_type": "part",
+    "telegram": "ARTEM"
   }
 ]

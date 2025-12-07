@@ -35,20 +35,19 @@
   },
   {
     "id": "80c065d1-43dd-4cbf-92d9-cc884817132f",
-    "user_id": "95ecde25-68c0-4bae-bf05-dc683d238178",
-    "name": "qwerty",
+    "user_id": "7a3bd959-c7ed-42af-998e-481a53b4dad8",
+    "name": "wwww",
     "gender": "мужской",
     "age": "44",
     "job": "Backend",
     "school": "TAVIAK",
     "skills": "js,go",
-    "photo": "photos/95ecde25-68c0-4bae-bf05-dc683d238178_906c2dde-7c8f-4f3b-92c6-ddf0bda8d0a8.png",
-    "position": "junior",
+    "photo": "photos/7a3bd959-c7ed-42af-998e-481a53b4dad8_f0c457f6-7088-466f-9a49-3fd3d6be993e.png",
+    "position": "",
     "salary": "40000",
     "experience": "до 1 года",
     "city": "Питер",
     "jobtype": "полный день",
-    "description": "I krut",
-    "telegram": "@Hirasawaaaa"
+    "description": "I krut"
   }
 ]

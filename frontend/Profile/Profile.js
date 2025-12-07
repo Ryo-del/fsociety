@@ -291,7 +291,6 @@ function updateSkillsDisplay(skills) {
 }
 
 // Обновление фото профиля
-// Обновление фото профиля с проверкой существования
 async function updateProfilePhoto(photoPath) {
     const avatarDisplay = document.getElementById('profile-avatar-display');
     
@@ -304,70 +303,43 @@ async function updateProfilePhoto(photoPath) {
             return;
         }
         
-        // Извлекаем только имя файла из пути
+        // Получаем имя файла из пути (убираем лишние префиксы)
         let filename = photoPath;
-        if (photoPath.includes('/')) {
-            filename = photoPath.split('/').pop();
+        if (filename.includes('/')) {
+            filename = filename.split('/').pop();
         }
-        console.log('Извлечено имя файла:', filename);
         
-        // Проверяем, есть ли фото на сервере
+        console.log('Загрузка фото:', filename);
+        
+        // Загружаем фото с сервера
         try {
-            // Используем GET запрос с небольшим таймаутом
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            // Добавляем timestamp для предотвращения кеширования
+            const timestamp = Date.now();
+            const photoUrl = `/api/ankety/photo/get?filename=${encodeURIComponent(filename)}&t=${timestamp}`;
             
-            const response = await fetch(`/api/get-photo?filename=${encodeURIComponent(filename)}&t=${Date.now()}`, {
-                method: 'GET',
-                credentials: 'include',
-                signal: controller.signal
+            // Проверяем доступность фото
+            const response = await fetch(photoUrl, {
+                method: 'HEAD',
+                credentials: 'include'
             });
             
-            clearTimeout(timeoutId);
-            
-            if (response.ok && response.headers.get('content-type')?.startsWith('image/')) {
-                // Создаем URL из blob
-                const blob = await response.blob();
-                const objectUrl = URL.createObjectURL(blob);
-                avatarDisplay.src = objectUrl;
-                console.log('Фото успешно загружено с сервера');
+            if (response.ok) {
+                // Фото существует, устанавливаем источник
+                avatarDisplay.src = photoUrl;
+                console.log('Фото успешно загружено');
             } else {
-                console.warn('Фото не найдено или некорректный ответ:', response.status);
+                console.warn('Фото не найдено на сервере:', response.status);
                 avatarDisplay.src = defaultAvatar;
             }
             
         } catch (error) {
-            console.error('Ошибка при проверке фото:', error);
-            // Если фото не загрузилось, пробуем прямой путь
-            avatarDisplay.src = `/api/get-photo?filename=${encodeURIComponent(filename)}&t=${Date.now()}`;
-            
-            // Устанавливаем обработчик ошибок на случай если прямой путь тоже не сработает
-            avatarDisplay.onerror = function() {
-                console.warn('Прямая загрузка фото не удалась, использую дефолтное фото');
-                this.src = defaultAvatar;
-                this.onerror = null; // Предотвращаем бесконечный цикл
-            };
+            console.error('Ошибка при загрузке фото:', error);
+            avatarDisplay.src = defaultAvatar;
         }
         
     } else {
         console.log('Путь к фото пустой, использую дефолтное фото');
         avatarDisplay.src = defaultAvatar;
-    }
-}
-
-
-// Проверка существования фото на сервере
-async function checkPhotoExists(filename) {
-    try {
-        const response = await fetch(`/api/get-photo?filename=${encodeURIComponent(filename)}`, {
-            method: 'HEAD',
-            credentials: 'include'
-        });
-        
-        return response.ok;
-    } catch (error) {
-        console.error('Ошибка проверки фото:', error);
-        return false;
     }
 }
 
@@ -432,6 +404,7 @@ function showCurrentPhoto(photoPath) {
     const uploadArea = document.getElementById('photo-upload-area');
     
     if (photoPath && photoPath.trim() !== "") {
+        // Используем тот же источник, что и в основном аватаре
         currentPhotoPreview.src = document.getElementById('profile-avatar-display').src;
         currentPhotoContainer.style.display = 'block';
         uploadArea.style.display = 'none';
@@ -489,6 +462,12 @@ async function handlePhotoFile(file) {
         return;
     }
     
+    // Ограничение размера файла (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showMessage('Файл слишком большой. Максимальный размер: 10MB', 'error');
+        return;
+    }
+    
     // Обрабатываем изображение (обрезаем и сжимаем)
     try {
         showMessage('Обработка изображения...', 'info');
@@ -521,7 +500,9 @@ async function deleteCurrentPhoto() {
     }
     
     try {
-        const response = await fetch('/api/delete-photo', {
+        showMessage('Удаление фото...', 'info');
+        
+        const response = await fetch('/api/ankety/photo/delete', {
             method: 'DELETE',
             credentials: 'include'
         });
@@ -548,7 +529,7 @@ async function deleteCurrentPhoto() {
 
 // Загрузка фото на сервер
 async function uploadPhoto(file) {
-    console.log('Загрузка фото на сервер:', file.name);
+    console.log('Загрузка фото на сервер:', file.name, file.type, file.size);
     
     const formData = new FormData();
     formData.append('photo', file);
@@ -556,16 +537,18 @@ async function uploadPhoto(file) {
     try {
         showMessage('Загрузка фото...', 'info');
         
-        const response = await fetch('/api/upload-photo', {
+        const response = await fetch('/api/ankety/photo/upload', {
             method: 'POST',
             body: formData,
             credentials: 'include'
+            // Content-Type для FormData устанавливается автоматически
         });
         
         console.log('Статус загрузки фото:', response.status);
         
         if (!response.ok) {
-            throw new Error(`Ошибка загрузки: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Ошибка загрузки: ${response.status} - ${errorText}`);
         }
         
         const result = await response.json();
@@ -584,7 +567,7 @@ async function createNewAnketa(data) {
     console.log('Создание новой анкеты:', data);
     
     try {
-        const response = await fetch('/api/create-ankety', {
+        const response = await fetch('/api/ankety/create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -610,15 +593,13 @@ async function createNewAnketa(data) {
         throw error;
     }
 }
-function goToProfile() {
-    window.location.href = '../profile/profile.html';
-}
+
 // Обновление анкеты
 async function updateAnketa(data) {
     console.log('Обновление анкеты:', data);
     
     try {
-        const response = await fetch('/api/update-ankety', {
+        const response = await fetch('/api/ankety/update', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -645,7 +626,6 @@ async function updateAnketa(data) {
 
 // Обработка отправки формы профиля
 async function handleProfileSubmit(e) {
-    
     e.preventDefault();
     e.stopPropagation();
     
@@ -656,7 +636,7 @@ async function handleProfileSubmit(e) {
     const data = Object.fromEntries(formData.entries());
     console.log('Данные формы:', data);
     
-    // Валидация
+    // Валидация обязательных полей (telegram теперь необязателен)
     if (!data.name || !data.age || !data.gender || !data.job || !data.school || !data.skills) {
         showMessage('Пожалуйста, заполните все обязательные поля', 'error');
         return;
@@ -681,6 +661,7 @@ async function handleProfileSubmit(e) {
             }
         }
         
+        // Обновляем текущую анкету
         currentAnketa = { ...currentAnketa, ...data };
         
         closeProfileModal();
@@ -698,21 +679,50 @@ async function handleProfileSubmit(e) {
 
 // Функция для показа сообщений
 function showMessage(message, type = 'info') {
-    const existingMessage = document.querySelector('.form-message');
-    if (existingMessage) {
-        existingMessage.remove();
-    }
+    // Удаляем существующие сообщения
+    const existingMessages = document.querySelectorAll('.form-message');
+    existingMessages.forEach(msg => msg.remove());
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `form-message ${type}`;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        z-index: 10000;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        animation: slideIn 0.3s ease;
+    `;
+    
+    // Цвета в зависимости от типа
+    switch(type) {
+        case 'success':
+            messageDiv.style.backgroundColor = '#28a745';
+            break;
+        case 'error':
+            messageDiv.style.backgroundColor = '#dc3545';
+            break;
+        case 'warning':
+            messageDiv.style.backgroundColor = '#ffc107';
+            messageDiv.style.color = '#212529';
+            break;
+        default:
+            messageDiv.style.backgroundColor = '#17a2b8';
+    }
+    
     messageDiv.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" 
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}" 
            style="margin-right: 10px;"></i>
         ${message}
     `;
     
     document.body.appendChild(messageDiv);
     
+    // Автоматическое скрытие через 5 секунд
     setTimeout(() => {
         if (messageDiv.parentNode) {
             messageDiv.style.opacity = '0';
@@ -735,6 +745,8 @@ function logout() {
         }).then(() => {
             localStorage.removeItem('userName');
             window.location.href = '../index.html';
+        }).catch(error => {
+            console.error('Ошибка выхода:', error);
         });
     }
 }
@@ -759,6 +771,29 @@ document.addEventListener('DOMContentLoaded', async function() {
             margin: 5px;
             font-size: 0.9em;
             font-weight: 500;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+        .skeleton-text {
+            height: 1em;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
     `;
     document.head.appendChild(style);

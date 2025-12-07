@@ -1,6 +1,16 @@
 // Базовый URL API
 const API_BASE_URL = window.location.origin;
-
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (e) {
+        console.error("Logout failed but proceeding with redirect:", e);
+    }
+    location.href = "../index.html";
+}
 // Авторизация
 async function initPage() {
     try {
